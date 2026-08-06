@@ -1,0 +1,389 @@
+// Prisma schema — интернет-магазин детской одежды 0–3 года.
+// Docs: https://pris.ly/d/prisma-schema
+//
+// РЕШЕНИЕ ПО ЛОКАЛИЗАЦИИ КОНТЕНТА (ru/az):
+// Локализованные текстовые поля хранятся ОТДЕЛЬНЫМИ КОЛОНКАМИ (nameRu/nameAz, ...),
+// а не одним JSON-полем { ru, az }. Причины:
+//   1. Портируемость: одинаково работает на SQLite (dev) и PostgreSQL (prod)
+//      без различий в поддержке JSON между провайдерами.
+//   2. Типобезопасность: Prisma генерирует строго типизированные string-поля,
+//      тогда как JSON пришлось бы разбирать и валидировать вручную (Prisma.JsonValue).
+//   3. Запросы: можно сортировать/фильтровать/искать по конкретному языку на уровне БД.
+// Набор языков фиксирован (ru/az) по спецификации, поэтому «размножение колонок»
+// ограничено и приемлемо. Добавление 3-го языка потребует миграции — осознанный компромисс.
+//
+// ПЕРЕЧИСЛЕНИЯ (enum): роли/статусы — это String с задокументированным набором значений,
+// а допустимые значения продублированы TypeScript-константами в lib/constants.ts (единый
+// источник правды в коде). Исторически так вышло из-за SQLite (там enum не поддерживался);
+// на PostgreSQL их МОЖНО перевести в настоящие enum, но осознанно не делаем: проверка и так
+// централизована в коде, а добавление статуса стало бы миграцией вместо правки константы.
+//
+// ДЕНЬГИ: цены и суммы хранятся целыми числами в МИНОРНЫХ единицах валюты
+// (напр. qəpik/копейки). Это избегает ошибок округления float и неоднозначности Decimal.
+// Валюта берётся из config/brand.ts; в заказе валюта фиксируется снапшотом.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  // PostgreSQL и в разработке, и в продакшне (Supabase) — одна схема, один провайдер,
+  // dev и prod ведут себя одинаково. Prisma не умеет брать provider из переменной
+  // окружения, поэтому «SQLite в dev» потребовал бы второй схемы — отказались.
+  // В Prisma 7 строка подключения задаётся не здесь, а в prisma.config.ts (для Migrate,
+  // через DIRECT_URL) и через driver adapter в PrismaClient (рантайм) — см. lib/prisma.ts.
+}
+
+// ─────────────────────────────────────────────────────────────
+// Пользователи, адреса
+// ─────────────────────────────────────────────────────────────
+
+// role: "customer" | "admin"
+// Модели Auth.js (Account/Session/VerificationToken) будут добавлены на этапе аутентификации.
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  emailVerified DateTime?
+  name          String?
+  image         String?
+  passwordHash  String? // для credentials-провайдера Auth.js; null у OAuth/гостя
+  role          String   @default("customer")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  addresses     Address[]
+  reviews       Review[]
+  orders        Order[]
+  cart          Cart?
+  notifications Notification[]
+}
+
+model Address {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fullName   String
+  phone      String
+  country    String?
+  city       String
+  line1      String
+  line2      String?
+  postalCode String?
+  isDefault  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([userId])
+}
+
+// ─────────────────────────────────────────────────────────────
+// Каталог: категории, товары, варианты, изображения
+// ─────────────────────────────────────────────────────────────
+
+// Иерархия категорий через self-relation (Девочки → Боди/Комбинезоны/Комплекты …).
+model Category {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  nameRu    String
+  nameAz    String
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  parentId String?
+  parent   Category?  @relation("CategoryTree", fields: [parentId], references: [id], onDelete: SetNull)
+  children Category[] @relation("CategoryTree")
+
+  products Product[]
+
+  @@index([parentId])
+}
+
+// Базовый товар. Остаток/цена/размер/цвет живут на уровне ProductVariant.
+model Product {
+  id   String @id @default(cuid())
+  slug String @unique
+
+  nameRu        String
+  nameAz        String
+  descriptionRu String?
+  descriptionAz String?
+
+  // Состав и уход (специфика ниши 0–3)
+  compositionRu String?
+  compositionAz String?
+  careRu        String?
+  careAz        String?
+
+  // Признаки безопасности/материала — используются как фильтры каталога
+  isOrganic        Boolean @default(false)
+  isHypoallergenic Boolean @default(false)
+  cottonPercent    Int? // напр. 100 для «100% хлопок»
+  certifications   String? // напр. "OEKO-TEX" (список через запятую)
+
+  isBundle    Boolean @default(false) // товар-набор (боди+ползунки+шапочка)
+  isPublished Boolean @default(true)
+
+  // Состав набора (для isBundle): что входит, по одному пункту на строку. Локализовано.
+  bundleItemsRu String?
+  bundleItemsAz String?
+
+  // SEO
+  metaTitleRu       String?
+  metaTitleAz       String?
+  metaDescriptionRu String?
+  metaDescriptionAz String?
+
+  categoryId String?
+  category   Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  variants ProductVariant[]
+  images   ProductImage[]
+  reviews  Review[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([categoryId])
+}
+
+// Вариант товара: конкретный размер + цвет. Здесь живёт остаток и цена.
+model ProductVariant {
+  id        String  @id @default(cuid())
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  sku String @unique
+
+  // Размер по месяцам (спецификация): "0-3m","3-6m","6-9m","9-12m","12-18m","18-24m","2-3y"
+  sizeCode    String
+  sizeLabelRu String // "0–3 мес"
+  sizeLabelAz String // "0–3 ay"
+  heightMinCm Int? // привязка к росту, диапазон 56–92
+  heightMaxCm Int?
+
+  colorRu  String
+  colorAz  String
+  colorHex String? // для свотча цвета в UI
+
+  price  Int // минорные единицы валюты (см. заметку о деньгах)
+  stock  Int     @default(0)
+  isActive Boolean @default(true)
+
+  images     ProductImage[]
+  cartItems  CartItem[]
+  orderItems OrderItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([productId, sizeCode, colorRu])
+  @@index([productId])
+}
+
+model ProductImage {
+  id        String  @id @default(cuid())
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  // Необязательная привязка к варианту — для фото конкретного цвета.
+  variantId String?
+  variant   ProductVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
+
+  url       String
+  altRu     String?
+  altAz     String?
+  sortOrder Int     @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([productId])
+  @@index([variantId])
+}
+
+// Отзыв — только зарегистрированный пользователь. Один отзыв на товар от пользователя.
+model Review {
+  id        String  @id @default(cuid())
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  rating             Int // 1..5
+  title              String?
+  body               String
+  isVerifiedPurchase Boolean @default(false) // опция на будущее
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([productId, userId])
+  @@index([productId])
+}
+
+// ─────────────────────────────────────────────────────────────
+// Корзина (гость по sessionToken ИЛИ привязана к пользователю)
+// ─────────────────────────────────────────────────────────────
+
+model Cart {
+  id           String  @id @default(cuid())
+  userId       String? @unique
+  user         User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessionToken String? @unique // корзина гостя
+
+  items     CartItem[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model CartItem {
+  id        String         @id @default(cuid())
+  cartId    String
+  cart      Cart           @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  variantId String
+  variant   ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  quantity  Int            @default(1)
+  // Цена варианта на момент добавления (минорные единицы) — чтобы показать «цена изменилась».
+  priceSnapshot Int        @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([cartId, variantId])
+  @@index([cartId])
+}
+
+// ─────────────────────────────────────────────────────────────
+// Заказы. OrderItem — исторический СНАПШОТ (не меняется при правках товара).
+// ─────────────────────────────────────────────────────────────
+
+// status: "created" | "accepted" | "assembled" | "shipped" | "delivered" | "cancelled"
+// paymentStatus/paymentMethod заложены заранее, чтобы Stripe добавлялся без переделки модели.
+model Order {
+  id          String  @id @default(cuid())
+  orderNumber String  @unique // человекочитаемый номер
+
+  userId String? // null у guest checkout
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  status String @default("created")
+
+  // Контакт покупателя (снапшот)
+  customerName  String
+  customerPhone String
+  customerEmail String?
+
+  // Адрес доставки — снапшот (заказ историчен). Опциональная ссылка на исходный адрес.
+  addressId      String?
+  shipCountry    String?
+  shipCity       String
+  shipLine1      String
+  shipLine2      String?
+  shipPostalCode String?
+
+  // Подарочный сценарий
+  isGift      Boolean @default(false)
+  giftWrap    Boolean @default(false)
+  giftMessage String?
+  comment     String?
+
+  // Деньги — снапшот на момент заказа (минорные единицы)
+  currency     String
+  subtotal     Int
+  shippingCost Int    @default(0)
+  total        Int
+
+  // Готовность к онлайн-оплате (вторая версия)
+  paymentStatus String  @default("unpaid") // "unpaid" | "paid" | "refunded"
+  paymentMethod String?
+
+  locale String @default("ru") // язык на момент заказа
+
+  items         OrderItem[]
+  notifications Notification[]
+  statusHistory OrderStatusHistory[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([status])
+}
+
+// История смены статусов заказа (аудит для админки: кто/когда сменил и на что).
+// Пишется при каждом переходе; отображается на странице заказа в админке.
+model OrderStatusHistory {
+  id      String @id @default(cuid())
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  status String // одно из ORDER_STATUSES (lib/constants.ts)
+  note   String? // необязательный комментарий администратора
+
+  // Кто сменил (админ). Снапшот на случай удаления пользователя.
+  changedById   String?
+  changedByName String?
+
+  createdAt DateTime @default(now())
+
+  @@index([orderId])
+}
+
+// Снапшот позиции: все отображаемые данные продублированы, чтобы правка/удаление
+// товара НЕ меняли уже созданный заказ. Ссылки на variant/product — необязательные (SetNull).
+model OrderItem {
+  id      String @id @default(cuid())
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  variantId String?
+  variant   ProductVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
+  productId String? // необязательный указатель на исходный товар
+
+  // СНАПШОТ на момент заказа
+  productNameRu String
+  productNameAz String
+  sizeLabelRu   String
+  sizeLabelAz   String
+  colorRu       String
+  colorAz       String
+  sku           String
+  imageUrl      String?
+  unitPrice     Int // минорные единицы
+  quantity      Int
+  lineTotal     Int
+
+  createdAt DateTime @default(now())
+
+  @@index([orderId])
+}
+
+// ─────────────────────────────────────────────────────────────
+// Уведомления (in-app). Telegram-уведомления шлёт сервис отдельно.
+// ─────────────────────────────────────────────────────────────
+
+// type: "new_order" | "order_status" | ...
+// recipientRole: "admin" | "customer" — админ-уведомления могут не иметь конкретного userId.
+model Notification {
+  id            String  @id @default(cuid())
+  type          String
+  recipientRole String  @default("admin")
+  userId        String?
+  user          User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orderId       String?
+  order         Order?  @relation(fields: [orderId], references: [id], onDelete: SetNull)
+
+  // Необязательный локализованный текст; иначе UI рендерит по type+order.
+  titleRu String?
+  titleAz String?
+  bodyRu  String?
+  bodyAz  String?
+
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([recipientRole, isRead])
+  @@index([orderId])
+}

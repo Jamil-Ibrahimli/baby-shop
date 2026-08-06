@@ -30,12 +30,30 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
+# Реальные env-файлы с секретами — НИКОГДА в репозиторий.
 .env*
+# Исключение: .env.example — публичный шаблон без значений, он нужен в репозитории.
+!.env.example
 
 # vercel
 .vercel
 
+# Локальные настройки Claude Code (личные, у каждого свои)
+.claude/settings.local.json
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Prisma generated client
+/lib/generated/prisma
+
+# Остатки прежней локальной SQLite-базы (проект перешёл на Postgres/Supabase)
+/prisma/*.db
+/prisma/*.db-journal
+
+# Остатки локальной загрузки фото (теперь фото уходят в Supabase Storage)
+/public/uploads
+
+# Бэкап миграций от SQLite-версии схемы — только для истории, применять нельзя
+/.migrations-sqlite-backup

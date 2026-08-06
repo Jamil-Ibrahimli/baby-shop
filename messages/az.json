@@ -1,0 +1,468 @@
+{
+  "Home": {
+    "welcome": "Xoş gəlmisiniz",
+    "subtitle": "0–3 yaş körpələr üçün isti və təhlükəsiz geyim.",
+    "catalogCta": "Kataloqa keç",
+    "foundationNote": "Bu, layihənin bünövrəsidir: vitrin, səbət və sifariş sonra əlavə olunacaq."
+  },
+  "LocaleSwitcher": {
+    "label": "Dil",
+    "ru": "Русский",
+    "az": "Azərbaycanca"
+  },
+  "Common": {
+    "loading": "Yüklənir…",
+    "error": "Nə isə səhv oldu",
+    "empty": "Boşdur"
+  },
+  "Catalog": {
+    "title": "Kataloq",
+    "subtitle": "0–3 yaş körpələr üçün geyim",
+    "found": "Tapılan məhsullar: {count}",
+    "priceFrom": "{price}-dən",
+    "openFilters": "Filtrlər",
+    "heading": "Körpələr üçün geyim",
+    "lead": "İlk günlərdən zərif qayğı. 0–3 yaş körpələr üçün.",
+    "Breadcrumbs": {
+      "home": "Ana səhifə"
+    },
+    "Sort": {
+      "label": "Çeşidləmə",
+      "popular": "Əvvəlcə populyar",
+      "price_asc": "Əvvəlcə ucuz",
+      "price_desc": "Əvvəlcə baha"
+    },
+    "Trust": {
+      "natural": {
+        "title": "Təbii materiallar",
+        "text": "Körpəniz üçün yalnız ən yaxşısı"
+      },
+      "safe": {
+        "title": "Təhlükəsizlik",
+        "text": "Hipoallergen və yoxlanılmış"
+      },
+      "love": {
+        "title": "Sevgi ilə hazırlanıb",
+        "text": "Hər detalda qayğı"
+      },
+      "delivery": {
+        "title": "Sürətli çatdırılma",
+        "text": "Bütün Azərbaycan üzrə"
+      }
+    },
+    "Filters": {
+      "heading": "Filtrlər",
+      "category": "Kateqoriya",
+      "allCategories": "Bütün kateqoriyalar",
+      "size": "Ölçü (yaş)",
+      "safety": "Tərkib və təhlükəsizlik",
+      "price": "Qiymət",
+      "apply": "Göstər",
+      "reset": "Sıfırla",
+      "safetyOptions": {
+        "organic": "Üzvi pambıq",
+        "hypoallergenic": "Hipoallergen",
+        "cotton100": "100% pambıq",
+        "bundle": "Dəst"
+      }
+    },
+    "Card": {
+      "bundle": "Dəst",
+      "organic": "Üzvi",
+      "sizes": "Ölçülər",
+      "organicCotton": "Üzvi pambıq",
+      "addToCart": "Səbətə",
+      "wishlistAdd": "Seçilmişlərə",
+      "wishlistRemove": "Seçilmişlərdən çıxar"
+    },
+    "Empty": {
+      "title": "Məhsul tapılmadı",
+      "description": "Filtrləri dəyişin və ya sıfırlayın.",
+      "reset": "Filtrləri sıfırla"
+    }
+  },
+  "Product": {
+    "backToCatalog": "Kataloqa",
+    "priceFrom": "{price}-dən",
+    "selectSize": "Ölçü (yaş)",
+    "selectColor": "Rəng",
+    "chooseVariant": "Ölçü və rəng seçin",
+    "inStock": "Mövcuddur",
+    "lowStock": "Qalıb: {count}",
+    "outOfStock": "Stokda yoxdur",
+    "addToCart": "Səbətə",
+    "quantity": "Say",
+    "added": "Səbətə əlavə edildi",
+    "goToCart": "Səbətə keç",
+    "capped": "Stokda yalnız {count} ədəd var.",
+    "selectVariantFirst": "Ölçü və rəng seçin",
+    "SizeGuide": {
+      "trigger": "Ölçü cədvəli",
+      "title": "0–3 ölçü cədvəli",
+      "colSize": "Ölçü",
+      "colAge": "Yaş",
+      "colHeight": "Boy, sm",
+      "howToTitle": "Ölçünü necə seçmək",
+      "howToText": "Yalnız yaşa deyil, uşağın boyuna baxın. Əgər körpə iki ölçü arasındadırsa — böyüyü götürün: geyim daha uzun istifadə olunar."
+    },
+    "Details": {
+      "description": "Təsvir",
+      "composition": "Tərkib",
+      "care": "Qulluq",
+      "safety": "Təhlükəsizlik və sertifikatlar"
+    },
+    "Safety": {
+      "organic": "Üzvi pambıq",
+      "hypoallergenic": "Hipoallergen",
+      "cotton": "{percent}% pambıq",
+      "certifications": "Sertifikatlar"
+    },
+    "Bundle": {
+      "title": "Dəstə nə daxildir"
+    },
+    "Reviews": {
+      "title": "Rəylər",
+      "summary": "5-dən {avg} · {count} rəy",
+      "empty": "Hələ rəy yoxdur",
+      "emptyHint": "İlk rəyi siz yazın.",
+      "verified": "Təsdiqlənmiş alış",
+      "anonymous": "Alıcı",
+      "formTitle": "Rəy yazın",
+      "editTitle": "Sizin rəyiniz",
+      "ratingLabel": "Qiymətiniz",
+      "placeholder": "Məhsul barədə təəssüratınızı yazın…",
+      "submit": "Göndər",
+      "update": "Yadda saxla",
+      "delete": "Sil",
+      "saved": "Rəy yadda saxlanıldı",
+      "signInToReview": "Rəy yazmaq üçün daxil olun və ya qeydiyyatdan keçin.",
+      "signIn": "Daxil ol",
+      "register": "Qeydiyyat",
+      "Errors": {
+        "rating_required": "Qiymət verin",
+        "body_required": "Ən azı bir neçə söz yazın",
+        "unauthorized": "Rəy yazmaq üçün daxil olun",
+        "not_found": "Məhsul tapılmadı"
+      }
+    }
+  },
+  "Header": {
+    "catalog": "Kataloq",
+    "cart": "Səbət",
+    "home": "Ana səhifə",
+    "signIn": "Daxil ol",
+    "account": "Hesab",
+    "notifications": "Bildirişlər"
+  },
+  "Admin": {
+    "title": "Admin panel",
+    "subtitle": "Mağaza idarəetməsi",
+    "statNewOrders": "Yeni müraciətlər",
+    "statOrders": "Ümumi sifariş",
+    "statProducts": "Satışda olan məhsul",
+    "statUnread": "Oxunmamış",
+    "latestOrders": "Son sifarişlər",
+    "seeAll": "Hamısı",
+    "supportQuestion": "Kömək lazımdır?",
+    "supportLink": "Dəstəklə əlaqə saxlayın",
+    "Nav": {
+      "label": "Admin panel bölmələri",
+      "openMenu": "Menyunu aç",
+      "toShop": "Mağazaya",
+      "withLove": "Körpələr üçün sevgi ilə",
+      "soon": "tezliklə",
+      "home": "Ana səhifə",
+      "orders": "Sifarişlər",
+      "products": "Məhsullar",
+      "customers": "Müştərilər",
+      "categories": "Kateqoriyalar",
+      "discounts": "Endirimlər",
+      "content": "Kontent",
+      "analytics": "Analitika",
+      "notifications": "Bildirişlər",
+      "settings": "Tənzimləmələr"
+    },
+    "Orders": {
+      "title": "Sifarişlər",
+      "backToAdmin": "Admin panel",
+      "all": "Hamısı",
+      "colNumber": "Nömrə",
+      "colDate": "Tarix",
+      "colCustomer": "Müştəri",
+      "colTotal": "Məbləğ",
+      "colStatus": "Status",
+      "registered": "müştəri",
+      "guest": "qonaq",
+      "itemsShort": "mövqe",
+      "open": "Aç",
+      "empty": "Sifariş yoxdur",
+      "manageStatus": "Status idarəetməsi",
+      "advanceTo": "«{status}» statusuna keçir",
+      "cancelOrder": "Sifarişi ləğv et",
+      "confirmCancel": "Bu sifariş ləğv edilsin? Bu geri qaytarıla bilməz.",
+      "doneDelivered": "Sifariş çatdırıldı — status artıq dəyişmir.",
+      "doneCancelled": "Sifariş ləğv edildi — status artıq dəyişmir.",
+      "itemsTitle": "Sifarişin tərkibi",
+      "total": "Yekun",
+      "customerTitle": "Müştəri",
+      "deliveryTitle": "Çatdırılma",
+      "gift": "Hədiyyə",
+      "historyTitle": "Status tarixçəsi",
+      "historyEmpty": "Hələ status dəyişikliyi yoxdur.",
+      "Errors": {
+        "forbidden": "Kifayət qədər hüquq yoxdur",
+        "invalid_status": "Naməlum status",
+        "not_found": "Sifariş tapılmadı",
+        "invalid_transition": "Yolverilməz status keçidi"
+      }
+    },
+    "Products": {
+      "title": "Məhsullar",
+      "backToAdmin": "Admin panel",
+      "add": "Məhsul əlavə et",
+      "editTitle": "Məhsulun redaktəsi",
+      "empty": "Hələ məhsul yoxdur",
+      "draft": "qaralama",
+      "noCategory": "Kateqoriyasız",
+      "category": "Kateqoriya",
+      "variantsShort": "variant",
+      "stockShort": "qalıq",
+      "sectionBasic": "Əsas",
+      "sectionCare": "Tərkib, qulluq, təhlükəsizlik",
+      "sectionVariants": "Variantlar (ölçü, rəng, qiymət, qalıq)",
+      "sectionImages": "Ümumi şəkillər (qalereya)",
+      "sectionColorImages": "Rənglərə görə şəkillər",
+      "colorImagesHint": "Şəkillər rəngə bağlanır və o rəng seçiləndə göstərilir. Rəngin şəkli yoxdursa — ümumi şəkillər göstərilir. Hər rəng üçün şəkli bir dəfə yükləmək kifayətdir (bütün ölçülərə).",
+      "noColorsYet": "Əvvəlcə rəngli variantlar əlavə edin — hər rəng üçün şəkil yükləmə blokları görünəcək.",
+      "nameRu": "Ad (rus.)",
+      "nameAz": "Ad (azərb.)",
+      "slug": "Slaq (URL)",
+      "descriptionRu": "Təsvir (rus.)",
+      "descriptionAz": "Təsvir (azərb.)",
+      "compositionRu": "Tərkib (rus.)",
+      "compositionAz": "Tərkib (azərb.)",
+      "careRu": "Qulluq (rus.)",
+      "careAz": "Qulluq (azərb.)",
+      "cottonPercent": "Pambıq faizi",
+      "certifications": "Sertifikatlar",
+      "isOrganic": "Üzvi pambıq",
+      "isHypoallergenic": "Hipoallergen",
+      "isPublished": "Dərc olunub",
+      "isBundle": "Dəst",
+      "bundleItemsRu": "Dəstin tərkibi (rus.), hər sətirdə bir bənd",
+      "bundleItemsAz": "Dəstin tərkibi (azərb.), hər sətirdə bir bənd",
+      "size": "Ölçü",
+      "sku": "Artikul (SKU)",
+      "colorRu": "Rəng (rus.)",
+      "colorAz": "Rəng (azərb.)",
+      "colorHex": "Rəng (HEX)",
+      "price": "Qiymət",
+      "stock": "Qalıq",
+      "variantActive": "Aktiv",
+      "removeVariant": "Variantı sil",
+      "addVariant": "Variant əlavə et",
+      "noVariants": "Hələ variant yoxdur. Ən azı bir ölçü və rəng əlavə edin.",
+      "uploadImage": "Şəkil yüklə",
+      "uploading": "Yüklənir…",
+      "uploadHint": "JPG, PNG, WEBP, 5 MB-a qədər. Bir neçə ola bilər.",
+      "noImages": "Hələ şəkil yoxdur.",
+      "altRu": "Alt-mətn (rus.)",
+      "altAz": "Alt-mətn (azərb.)",
+      "moveUp": "Yuxarı",
+      "moveDown": "Aşağı",
+      "removeImage": "Şəkli sil",
+      "save": "Yadda saxla",
+      "create": "Yarat",
+      "delete": "Sil",
+      "confirmDelete": "Bu məhsul silinsin? Bu geri qaytarıla bilməz.",
+      "UploadErrors": {
+        "forbidden": "Kifayət qədər hüquq yoxdur",
+        "no_file": "Fayl seçilməyib",
+        "bad_type": "Dəstəklənməyən format",
+        "too_large": "Fayl 5 MB-dan böyükdür",
+        "not_configured": "Foto anbarı qurulmayıb — Supabase tənzimləmələrini yoxlayın",
+        "failed": "Yükləmək alınmadı"
+      },
+      "Errors": {
+        "forbidden": "Kifayət qədər hüquq yoxdur",
+        "name_required": "Adı hər iki dildə doldurun",
+        "slug_required": "Slaq daxil edin (latın hərfləri ilə)",
+        "slug_taken": "Bu slaq artıq tutulub",
+        "variant_size": "Variantın ölçüsü yanlışdır",
+        "variant_sku": "Hər variantın artikulu olmalıdır",
+        "variant_sku_dup": "Variant artikulları təkrarlanır",
+        "variant_color": "Variantın rəngini hər iki dildə göstərin",
+        "variant_price": "Variantın qiyməti sıfırdan böyük olmalıdır",
+        "sku_or_variant_taken": "Artikul və ya ölçü+rəng uyğunluğu artıq mövcuddur"
+      }
+    },
+    "Categories": {
+      "title": "Kateqoriyalar",
+      "backToAdmin": "Admin panel",
+      "empty": "Hələ kateqoriya yoxdur",
+      "productsShort": "məhsul",
+      "edit": "Redaktə et",
+      "delete": "Sil",
+      "editTitle": "Kateqoriyanın redaktəsi",
+      "newTitle": "Yeni kateqoriya",
+      "cancel": "Ləğv et",
+      "nameRu": "Ad (rus.)",
+      "nameAz": "Ad (azərb.)",
+      "slug": "Slaq (URL)",
+      "parent": "Valideyn kateqoriya",
+      "noParent": "Valideynsiz (kök)",
+      "sortOrder": "Sıra",
+      "save": "Yadda saxla",
+      "create": "Yarat",
+      "confirmDelete": "Kateqoriya silinsin? Məhsullar kateqoriyasız qalacaq.",
+      "Errors": {
+        "forbidden": "Kifayət qədər hüquq yoxdur",
+        "name_required": "Adı hər iki dildə doldurun",
+        "slug_required": "Slaq daxil edin (latın hərfləri ilə)",
+        "slug_taken": "Bu slaq artıq tutulub",
+        "cycle": "Kateqoriya öz-özünə daxil edilə bilməz"
+      }
+    }
+  },
+  "Notifications": {
+    "title": "Bildirişlər",
+    "empty": "Yeni bildiriş yoxdur",
+    "emptyFiltered": "Bu filtrə uyğun bildiriş yoxdur",
+    "markAllRead": "Hamısını oxunmuş kimi işarələ",
+    "clearRead": "Oxunmuşları təmizlə",
+    "confirmClearRead": "Bütün oxunmuş bildirişlər silinsin? Geri qaytarmaq olmaz.",
+    "actions": "Bildiriş əməliyyatları",
+    "unreadLabel": "yeni",
+    "markRead": "Oxunmuş kimi işarələ",
+    "delete": "Sil",
+    "newCount": "{count, plural, one {# yeni} other {# yeni}}",
+    "today": "Bu gün",
+    "yesterday": "Dünən",
+    "orderPlaced": "Sifariş verildi",
+    "statusChanged": "Sifariş {order}: {status}",
+    "Filter": {
+      "all": "Hamısı",
+      "unread": "Yeni",
+      "orders": "Sifarişlər",
+      "system": "Sistem"
+    }
+  },
+  "Checkout": {
+    "title": "Sifarişin rəsmiləşdirilməsi",
+    "contactsTitle": "Əlaqə",
+    "addressTitle": "Çatdırılma ünvanı",
+    "giftTitle": "Hədiyyə",
+    "commentTitle": "Sifarişə şərh",
+    "name": "Ad",
+    "phone": "Telefon",
+    "email": "E-poçt",
+    "city": "Şəhər",
+    "line1": "Küçə, ev",
+    "line2": "Mənzil, giriş (istəyə görə)",
+    "postalCode": "Poçt indeksi",
+    "country": "Ölkə",
+    "isGift": "Bu, hədiyyədir",
+    "giftMessagePlaceholder": "Hədiyyəyə arzu…",
+    "commentPlaceholder": "Mağaza üçün şərh…",
+    "submit": "Sifariş ver",
+    "summaryTitle": "Sifarişiniz",
+    "total": "Cəmi",
+    "paymentNote": "Ödəniş çatdırılma zamanı. Onlayn ödənişi sonra əlavə edəcəyik.",
+    "issuesWarning": "Bəzi mövqelər əlçatan deyil və ya dəyişib — səbətə qayıdın.",
+    "backToCart": "Səbətə",
+    "Empty": {
+      "title": "Səbət boşdur",
+      "description": "Sifariş vermək üçün məhsul əlavə edin.",
+      "cta": "Kataloqa"
+    },
+    "Errors": {
+      "empty_cart": "Səbət boşdur",
+      "invalid_form": "Ad, telefon, şəhər və ünvanı doldurun",
+      "unavailable": "Bəzi məhsullar stokda çatmır — səbətə qayıdın"
+    }
+  },
+  "Order": {
+    "title": "Sifariş qəbul edildi!",
+    "thanks": "Təşəkkürlər! Təsdiq üçün sizinlə əlaqə saxlayacağıq.",
+    "numberLabel": "Sifariş nömrəsi",
+    "itemsTitle": "Sifarişin tərkibi",
+    "totalLabel": "Cəmi",
+    "deliveryTitle": "Çatdırılma",
+    "giftLabel": "Hədiyyə",
+    "commentLabel": "Şərh",
+    "continueShopping": "Kataloqa",
+    "viewInAccount": "Şəxsi kabinetə",
+    "Progress": {
+      "title": "Sifarişin statusu",
+      "done": "keçildi",
+      "current": "cari mərhələ",
+      "upcoming": "gözlənilir",
+      "cancelledNote": "Səhv olduğunu düşünürsünüzsə, bizimlə əlaqə saxlayın."
+    }
+  },
+  "OrderStatus": {
+    "created": "Yaradıldı",
+    "accepted": "Qəbul edildi",
+    "assembled": "Yığıldı",
+    "shipped": "Göndərildi",
+    "delivered": "Çatdırıldı",
+    "cancelled": "Ləğv edildi"
+  },
+  "Auth": {
+    "email": "E-poçt",
+    "password": "Şifrə",
+    "name": "Ad",
+    "signOut": "Çıxış",
+    "Login": {
+      "title": "Giriş",
+      "submit": "Daxil ol",
+      "noAccount": "Hesabınız yoxdur?",
+      "registerLink": "Qeydiyyatdan keç"
+    },
+    "Register": {
+      "title": "Qeydiyyat",
+      "submit": "Hesab yarat",
+      "passwordHint": "Ən azı 6 simvol",
+      "haveAccount": "Artıq hesabınız var?",
+      "loginLink": "Daxil ol"
+    },
+    "Errors": {
+      "invalid": "E-poçt və şifrəni yoxlayın",
+      "credentials": "E-poçt və ya şifrə yanlışdır",
+      "invalid_email": "Yanlış e-poçt",
+      "weak_password": "Şifrə çox qısadır (ən azı 6 simvol)",
+      "email_taken": "Bu e-poçt artıq qeydiyyatdan keçib"
+    },
+    "Account": {
+      "title": "Şəxsi kabinet",
+      "roleLabel": "Rol",
+      "roleCustomer": "Alıcı",
+      "roleAdmin": "Administrator",
+      "ordersTitle": "Sifarişlər",
+      "ordersEmpty": "Hələ sifariş yoxdur — rəsmiləşdirmə növbəti addımda əlavə olunacaq.",
+      "addressesTitle": "Ünvanlar",
+      "addressesEmpty": "Hələ yadda saxlanmış ünvan yoxdur."
+    }
+  },
+  "Cart": {
+    "title": "Səbət",
+    "each": "ədəd",
+    "quantity": "Say",
+    "remove": "Sil",
+    "subtotal": "Cəmi",
+    "itemsCount": "Məhsul: {count}",
+    "checkout": "Sifarişi rəsmiləşdir",
+    "checkoutSoon": "Sifarişin rəsmiləşdirilməsini növbəti addımda əlavə edəcəyik.",
+    "issuesNote": "Bəzi mövqelər əlçatan deyil və ya sayı azaldılıb — səbəti yoxlayın.",
+    "Issue": {
+      "outOfStock": "Stokda yoxdur",
+      "quantityReduced": "Yalnız {count} ədəd qalıb",
+      "priceChanged": "Qiymət dəyişib"
+    },
+    "Empty": {
+      "title": "Səbət boşdur",
+      "description": "Kataloqa baxın və körpəniz üçün nəsə seçin.",
+      "cta": "Kataloqa"
+    }
+  }
+}

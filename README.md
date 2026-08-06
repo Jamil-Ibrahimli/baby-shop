@@ -1,36 +1,194 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Интернет-магазин детской одежды 0–3
 
-## Getting Started
+Готовый двуязычный (русский + азербайджанский) магазин детской одежды: витрина,
+корзина, оформление заказа и админка для владельца. Mobile-first.
+Весь бренд — название, цвета, логотип, контакты — меняется в одном файле
+(`config/brand.ts`), поэтому под нового клиента магазин «переодевается» без правок кода.
 
-First, run the development server:
+Полное описание продукта — в [SPECIFICATION.md](SPECIFICATION.md).
+Текущее состояние работ — в [PROGRESS.md](PROGRESS.md).
+
+**Онлайн-оплаты нет намеренно.** Оформление заказа — это *заявка*, которую владелец
+подтверждает вручную и звонит покупателю. Так работает большинство небольших магазинов
+в регионе. Структура заказа спроектирована так, чтобы Stripe можно было добавить позже
+без переделки модели данных.
+
+---
+
+## Стек
+
+| Слой | Технология |
+|------|-----------|
+| Фронтенд + бэкенд | Next.js 16 (App Router), TypeScript, Server Actions |
+| Стили | Tailwind CSS 4, shadcn/ui (пресет base-nova, примитивы `@base-ui/react`) |
+| База данных | PostgreSQL (Supabase), Prisma 7 + driver adapter `@prisma/adapter-pg` |
+| Файлы | Supabase Storage (фото товаров) |
+| Аутентификация | Auth.js (NextAuth), роли `customer` / `admin` |
+| Локализация | next-intl (`ru`, `az`) |
+| Уведомления | in-app + Telegram Bot API |
+| Хостинг | Vercel |
+
+Отдельного бэкенда нет: серверная логика живёт в Server Actions (`lib/*-actions.ts`)
+и Route Handlers (`app/api/*`).
+
+---
+
+## Локальный запуск
+
+Нужны Node.js 20+ и аккаунт [Supabase](https://supabase.com) (бесплатного тарифа хватает).
+PostgreSQL используется и локально, и в продакшне — так dev и prod ведут себя одинаково.
+
+### 1. Зависимости
+
+```bash
+npm install
+```
+
+### 2. Проект в Supabase
+
+1. Создайте проект на [supabase.com](https://supabase.com) и запомните пароль базы.
+2. **Строки подключения:** кнопка **Connect** вверху дашборда.
+   - `DATABASE_URL` → **Transaction pooler** (`...pooler.supabase.com:6543`) — им работает приложение.
+   - `DIRECT_URL` → **Session pooler** (`...pooler.supabase.com:5432`) — им работают только миграции.
+
+   Transaction pooler обязателен для приложения: на serverless каждый инстанс держит
+   своё соединение, и без пулера прод-база упирается в лимит подключений. Миграциям
+   наоборот нужен session-режим — в transaction-режиме нельзя держать advisory-лок
+   для DDL, и `prisma migrate` падает или зависает.
+
+   > **Не используйте «Direct connection» (`db.<ref>.supabase.co:5432`).** У новых
+   > проектов Supabase у этого хоста есть только IPv6-адрес (A-записи нет), поэтому
+   > из сети без IPv6 он недоступен и `prisma migrate` падает с `P1001: Can't reach
+   > database server`. IPv4 для прямого подключения — платный add-on. Session pooler
+   > доступен по IPv4 и для миграций подходит.
+   >
+   > Быстрая проверка, что дело именно в этом:
+   > `nslookup db.<ref>.supabase.co` — если в ответе только IPv6, берите session pooler.
+3. **Бакет для фото:** *Storage → New bucket*, имя `product-images`,
+   переключатель **Public bucket — включить**. Фото товаров смотрят все посетители;
+   в приватном бакете ссылки отдадут ошибку.
+4. **Ключ:** *Project Settings → API keys → `service_role`*.
+   Он обходит защиту на уровне строк, поэтому используется только на сервере
+   (`lib/storage.ts` помечен `server-only`) и никогда не попадает в браузер.
+
+### 3. Переменные окружения
+
+```bash
+cp .env.example .env
+```
+
+Заполните `.env` значениями из шага 2 и сгенерируйте секрет Auth.js:
+
+```bash
+npx auth secret
+```
+
+### 4. База и демо-данные
+
+```bash
+npx prisma migrate deploy   # создать таблицы
+npm run seed                # категории, товары, размеры, демо-пользователи
+```
+
+### 5. Запуск
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Откройте <http://localhost:3000> (редиректит на `/ru`).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+**Демо-входы из сида:**
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Роль | Email | Пароль |
+|------|-------|--------|
+| Админ | `admin@example.com` | `admin1234` |
+| Покупатель | `customer@example.com` | `password` |
 
-## Learn More
+Админка — `/ru/admin` (доступна только роли `admin`).
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Деплой на Vercel
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. Залейте репозиторий на GitHub и импортируйте его в Vercel
+   (*Add New → Project*). Next.js определится сам, настройки сборки менять не нужно.
+2. **Environment Variables** — перенесите все переменные из `.env`, кроме `AUTH_URL`:
+   ему задайте адрес продакшна (`https://<ваш-домен>`), иначе вход будет
+   редиректить на `localhost`.
+3. Миграции на прод-базу применяются с локальной машины (в `.env` должен быть
+   `DIRECT_URL` прод-проекта):
 
-## Deploy on Vercel
+   ```bash
+   npx prisma migrate deploy
+   ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+   Если прод-база должна стартовать с демо-товарами — `npm run seed`.
+4. Деплой. После первого захода проверьте:
+   - товар открывается, фото грузятся (`next/image` разрешает `*.supabase.co`);
+   - вход админом работает (значит `AUTH_SECRET`/`AUTH_URL` заданы верно);
+   - загрузка фото в админке возвращает ссылку на Supabase, а не ошибку
+     «Хранилище фото не настроено».
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+**Почему фото не лежат в проекте.** У Vercel эфемерная файловая система: файлы,
+записанные приложением в `public/`, исчезают при следующем деплое или перезапуске
+инстанса. Поэтому загрузка идёт в Supabase Storage, а в базе хранится публичный URL.
+
+### Telegram-уведомления владельцу (необязательно)
+
+1. Напишите [@BotFather](https://t.me/BotFather), команда `/newbot` → получите
+   `TELEGRAM_BOT_TOKEN`.
+2. Напишите своему боту любое сообщение, затем откройте
+   `https://api.telegram.org/bot<ТОКЕН>/getUpdates` и возьмите `chat.id` →
+   это `TELEGRAM_CHAT_ID`.
+3. Добавьте обе переменные в Vercel и сделайте redeploy.
+
+Без этих переменных всё остальное работает: отправка в Telegram молча пропускается,
+in-app уведомление админу создаётся как обычно.
+
+---
+
+## Как переодеть магазин под другой бренд
+
+1. **`config/brand.ts`** — название, слоганы, валюта, палитра, контакты, Telegram.
+   Цвета отсюда проецируются в CSS-переменные, поэтому смена `colors.primary`
+   перекрашивает весь интерфейс — кнопки, цены, активные фильтры, админку.
+   Логотип: положите файл в `public/` и укажите `logo.src` — текстовый wordmark
+   заменится картинкой.
+2. **`messages/ru.json` и `messages/az.json`** — все строки интерфейса.
+   Захардкоженного текста в компонентах нет: если строка видна пользователю,
+   она лежит здесь.
+3. **`prisma/seed.ts`** — демо-категории и товары. Для реального магазина
+   заведите каталог через админку, а сид используйте только для разработки.
+4. Размеры (`lib/constants.ts`, `SIZE_TABLE`) заданы по месяцам с привязкой к росту
+   в см — это ассортимент 0–3 года. Для другого возраста меняется таблица размеров.
+
+---
+
+## Скрипты
+
+```bash
+npm run dev            # разработка
+npm run build          # прод-сборка
+npm run start          # запуск прод-сборки
+npm run lint           # линтер
+npm run seed           # демо-данные
+npm run db:migrate     # prisma migrate dev (создать миграцию в разработке)
+npm run db:studio      # визуальный просмотр базы
+npm run db:generate    # перегенерировать Prisma Client
+```
+
+---
+
+## Структура
+
+```
+app/[locale]/(shop)/   витрина (своя шапка сайта)
+app/[locale]/admin/    админка (своя оболочка с сайдбаром)
+app/api/               route handlers (upload, auth)
+components/            UI; components/ui — shadcn
+lib/                   сервисы, Server Actions, Prisma-клиент, storage
+config/brand.ts        КОНФИГ БРЕНДА
+prisma/                schema.prisma, миграции, seed.ts
+messages/              переводы ru/az
+```

@@ -1,0 +1,269 @@
+"use client";
+
+import { useMemo, useState, useTransition } from "react";
+import type { ReactNode } from "react";
+import { useTranslations } from "next-intl";
+import { Check, Minus, Plus } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { formatPrice } from "@/lib/format";
+import { Link, useRouter } from "@/i18n/navigation";
+import { addToCart } from "@/lib/cart-actions";
+import type { ProductVariantVM } from "@/lib/product-types";
+import type { Locale } from "@/i18n/routing";
+import { useColorSelection } from "./color-selection";
+
+type Props = {
+  variants: ProductVariantVM[];
+  priceFromMinor: number;
+  locale: Locale;
+  /** Слот для таблицы размеров (серверный компонент, передаётся со страницы). */
+  sizeGuideSlot?: ReactNode;
+};
+
+export function ProductVariantSelector({
+  variants,
+  priceFromMinor,
+  locale,
+  sizeGuideSlot,
+}: Props) {
+  const t = useTranslations("Product");
+  const router = useRouter();
+  const { setColorKey } = useColorSelection();
+  const [isPending, startTransition] = useTransition();
+  const [feedback, setFeedback] = useState<{ capped: boolean } | null>(null);
+
+  const sizes = useMemo(() => {
+    const seen = new Map<string, { code: string; label: string }>();
+    for (const v of variants) {
+      if (!seen.has(v.sizeCode))
+        seen.set(v.sizeCode, { code: v.sizeCode, label: v.sizeLabel });
+    }
+    return [...seen.values()];
+  }, [variants]);
+
+  const colors = useMemo(() => {
+    const seen = new Map<
+      string,
+      { color: string; hex: string | null; colorKey: string }
+    >();
+    for (const v of variants) {
+      if (!seen.has(v.color))
+        seen.set(v.color, {
+          color: v.color,
+          hex: v.colorHex,
+          colorKey: v.colorKey,
+        });
+    }
+    return [...seen.values()];
+  }, [variants]);
+
+  const [size, setSize] = useState<string | null>(null);
+  const [color, setColor] = useState<string | null>(null);
+  const [qty, setQty] = useState(1);
+
+  const find = (s: string | null, c: string | null) =>
+    variants.find((v) => v.sizeCode === s && v.color === c) ?? null;
+
+  const sizeAvailable = (s: string) =>
+    variants.some((v) => v.sizeCode === s && v.available);
+  const colorEnabled = (c: string) =>
+    size
+      ? !!find(size, c)?.available
+      : variants.some((v) => v.color === c && v.available);
+
+  const selected = find(size, color);
+  const canBuy = !!selected && selected.available;
+
+  function selectSize(s: string) {
+    setSize(s);
+    setFeedback(null);
+    setQty(1);
+    if (color && !find(s, color)?.available) {
+      setColor(null);
+      setColorKey(null); // сброс цвета → галерея возвращается к общим фото
+    }
+  }
+
+  function selectColor(c: string, key: string) {
+    setColor(c);
+    setColorKey(key); // сообщаем галерее выбранный цвет
+    setFeedback(null);
+    setQty(1);
+  }
+
+  function changeQty(delta: number) {
+    if (!selected) return;
+    setQty((q) => Math.min(Math.max(1, q + delta), selected.stock));
+  }
+
+  function handleAdd() {
+    if (!selected) return;
+    startTransition(async () => {
+      const res = await addToCart(selected.id, qty);
+      if (res.ok) {
+        setFeedback({ capped: res.capped });
+        router.refresh(); // обновить счётчик в шапке
+      }
+    });
+  }
+
+  const priceLabel = selected
+    ? formatPrice(selected.priceMinor, locale)
+    : t("priceFrom", { price: formatPrice(priceFromMinor, locale) });
+
+  let stockNode: ReactNode = (
+    <span className="text-muted-foreground">{t("chooseVariant")}</span>
+  );
+  if (selected) {
+    if (!selected.available) {
+      stockNode = <span className="text-destructive">{t("outOfStock")}</span>;
+    } else if (selected.stock <= 3) {
+      stockNode = (
+        <span className="text-foreground">
+          {t("lowStock", { count: selected.stock })}
+        </span>
+      );
+    } else {
+      stockNode = <span className="text-foreground">{t("inStock")}</span>;
+    }
+  }
+
+  return (
+    <div className="flex flex-col gap-6">
+      <div className="text-2xl font-semibold">{priceLabel}</div>
+
+      {/* Размер */}
+      <div>
+        <div className="mb-2 flex items-center justify-between gap-2">
+          <span className="text-sm font-medium">{t("selectSize")}</span>
+          {sizeGuideSlot}
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {sizes.map((s) => {
+            const disabled = !sizeAvailable(s.code);
+            const isActive = size === s.code;
+            return (
+              <button
+                key={s.code}
+                type="button"
+                disabled={disabled}
+                aria-pressed={isActive}
+                onClick={() => selectSize(s.code)}
+                className={cn(
+                  "rounded-full border px-3 py-1.5 text-sm transition-colors",
+                  isActive
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "border-border hover:border-foreground",
+                  disabled &&
+                    "cursor-not-allowed border-dashed text-muted-foreground/50 line-through hover:border-dashed",
+                )}
+              >
+                {s.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Цвет */}
+      <div>
+        <div className="mb-2 text-sm font-medium">{t("selectColor")}</div>
+        <div className="flex flex-wrap gap-2">
+          {colors.map((c) => {
+            const enabled = colorEnabled(c.color);
+            const isActive = color === c.color;
+            return (
+              <button
+                key={c.color}
+                type="button"
+                disabled={!enabled}
+                aria-pressed={isActive}
+                onClick={() => selectColor(c.color, c.colorKey)}
+                className={cn(
+                  "flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm transition-colors",
+                  isActive
+                    ? "border-primary ring-2 ring-primary/40"
+                    : "border-border hover:border-foreground",
+                  !enabled &&
+                    "cursor-not-allowed text-muted-foreground/50 line-through",
+                )}
+              >
+                <span
+                  className="size-4 rounded-full border border-black/10"
+                  style={{ backgroundColor: c.hex ?? "transparent" }}
+                  aria-hidden
+                />
+                {c.color}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="text-sm">{stockNode}</div>
+
+      {/* Количество + В корзину */}
+      <div className="flex flex-col gap-3">
+        <div className="flex items-center gap-4">
+          <div
+            className="inline-flex items-center rounded-full border border-border"
+            role="group"
+            aria-label={t("quantity")}
+          >
+            <button
+              type="button"
+              onClick={() => changeQty(-1)}
+              disabled={!canBuy || qty <= 1}
+              aria-label="-"
+              className="flex size-9 items-center justify-center rounded-full disabled:opacity-40"
+            >
+              <Minus className="size-4" />
+            </button>
+            <span className="min-w-8 text-center text-sm tabular-nums">
+              {qty}
+            </span>
+            <button
+              type="button"
+              onClick={() => changeQty(1)}
+              disabled={!canBuy || qty >= (selected?.stock ?? 1)}
+              aria-label="+"
+              className="flex size-9 items-center justify-center rounded-full disabled:opacity-40"
+            >
+              <Plus className="size-4" />
+            </button>
+          </div>
+
+          <Button
+            size="lg"
+            className="flex-1 rounded-full sm:flex-none"
+            disabled={!canBuy || isPending}
+            onClick={handleAdd}
+          >
+            {canBuy ? t("addToCart") : t("selectVariantFirst")}
+          </Button>
+        </div>
+
+        {feedback && (
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+            <span className="inline-flex items-center gap-1 text-primary">
+              <Check className="size-4" aria-hidden />
+              {t("added")}
+            </span>
+            {feedback.capped && selected && (
+              <span className="text-muted-foreground">
+                {t("capped", { count: selected.stock })}
+              </span>
+            )}
+            <Link
+              href="/cart"
+              className="font-medium underline underline-offset-4"
+            >
+              {t("goToCart")}
+            </Link>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
