@@ -35,6 +35,12 @@ function buildText(o: OrderNotificationData): string {
 }
 
 // Отправка в Telegram. Если TELEGRAM_BOT_TOKEN/TELEGRAM_CHAT_ID не заданы — пропуск без ошибки.
+//
+// Ответ API ОБЯЗАТЕЛЬНО проверяем: fetch не считает ошибкой ни 401 (неверный токен),
+// ни 400 («chat not found»), поэтому раньше такие сбои были полностью невидимы —
+// заказ оформлялся, а владелец просто не получал уведомление и не знал почему.
+// Ошибку логируем и глотаем: оформление заказа она ломать не должна.
+// Токен в лог не попадает никогда — только код и описание ошибки от Telegram.
 export async function sendTelegramNewOrder(
   order: OrderNotificationData,
 ): Promise<void> {
@@ -43,12 +49,47 @@ export async function sendTelegramNewOrder(
   if (!token || !chatId) return;
 
   try {
-    await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ chat_id: chatId, text: buildText(order) }),
-    });
-  } catch {
-    // Сеть/ошибка API не должны мешать оформлению заказа.
+    const res = await fetch(
+      `https://api.telegram.org/bot${token}/sendMessage`,
+      {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ chat_id: chatId, text: buildText(order) }),
+      },
+    );
+
+    const body = (await res.json().catch(() => null)) as {
+      ok?: boolean;
+      error_code?: number;
+      description?: string;
+    } | null;
+
+    if (!res.ok || !body?.ok) {
+      console.warn(
+        `[telegram] уведомление о заказе ${order.orderNumber} НЕ отправлено:`,
+        {
+          httpStatus: res.status,
+          errorCode: body?.error_code,
+          description: body?.description,
+          hint:
+            body?.error_code === 401
+              ? "неверный или отозванный TELEGRAM_BOT_TOKEN — возьмите заново у @BotFather"
+              : body?.error_code === 400
+                ? "проверьте TELEGRAM_CHAT_ID и то, что вы писали боту хотя бы раз"
+                : undefined,
+        },
+      );
+      return;
+    }
+
+    console.info(
+      `[telegram] уведомление о заказе ${order.orderNumber} отправлено`,
+    );
+  } catch (e) {
+    // Сеть не должна мешать оформлению заказа, но и молчать о сбое нельзя.
+    console.warn(
+      `[telegram] уведомление о заказе ${order.orderNumber} НЕ отправлено (сетевая ошибка):`,
+      e instanceof Error ? e.message : String(e),
+    );
   }
 }
