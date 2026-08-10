@@ -36,8 +36,15 @@ export function ImageUploader({
         if (!res.ok) {
           const data = (await res.json().catch(() => ({}))) as {
             error?: string;
+            detail?: string;
           };
-          setError(t(`UploadErrors.${data.error ?? "failed"}`));
+          // detail приходит только при сбое хранилища — показываем как подсказку,
+          // иначе владелец магазина не знает, что именно проверять в настройках.
+          setError(
+            [t(`UploadErrors.${data.error ?? "failed"}`), data.detail]
+              .filter(Boolean)
+              .join(" — "),
+          );
           continue;
         }
         const data = (await res.json()) as { url: string };

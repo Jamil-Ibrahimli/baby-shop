@@ -42,7 +42,11 @@ export async function POST(req: NextRequest) {
     const url = await uploadProductImage(buffer, file.type, ext);
     return NextResponse.json({ url });
   } catch (e) {
+    // Причину отдаём в ответе, а не только в логи: роут под админ-гардом, а логи
+    // хостинга владельцу магазина недоступны — без текста ошибки он видит лишь
+    // «не удалось загрузить» и не понимает, что проверять в настройках.
+    const detail = e instanceof Error ? e.message : String(e);
     console.error("upload failed", e);
-    return NextResponse.json({ error: "failed" }, { status: 500 });
+    return NextResponse.json({ error: "failed", detail }, { status: 500 });
   }
 }
