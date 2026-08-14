@@ -25,14 +25,15 @@ export function ToastProvider({
   children: ReactNode;
   closeLabel: string; // строка локализована в layout — сюда приходит готовой
 }) {
+  // Viewport рендерим прямо здесь, без Toast.Portal: лишний слой не нужен
+  // (позиционирование и так fixed), зато область уведомлений видна в разметке
+  // страницы — это проверяемо.
   return (
     <ToastPrimitive.Provider>
       {children}
-      <ToastPrimitive.Portal>
-        <ToastPrimitive.Viewport className="fixed inset-x-4 bottom-4 z-50 flex flex-col-reverse gap-2 outline-none sm:inset-x-auto sm:right-6 sm:bottom-6 sm:w-sm">
-          <ToastList closeLabel={closeLabel} />
-        </ToastPrimitive.Viewport>
-      </ToastPrimitive.Portal>
+      <ToastPrimitive.Viewport className="fixed inset-x-4 bottom-4 z-50 flex flex-col-reverse gap-2 outline-none sm:inset-x-auto sm:right-6 sm:bottom-6 sm:w-96">
+        <ToastList closeLabel={closeLabel} />
+      </ToastPrimitive.Viewport>
     </ToastPrimitive.Provider>
   );
 }
@@ -44,10 +45,7 @@ function ToastList({ closeLabel }: { closeLabel: string }) {
     <ToastPrimitive.Root
       key={toast.id}
       toast={toast}
-      className={cn(
-        "flex items-start gap-3 rounded-2xl border border-border bg-card p-4 shadow-lg",
-        "transition-opacity duration-200 data-[ending-style]:opacity-0 data-[starting-style]:opacity-0",
-      )}
+      className="flex items-start gap-3 rounded-2xl border border-border bg-card p-4 shadow-lg"
     >
       <span
         aria-hidden
