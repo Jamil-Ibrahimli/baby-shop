@@ -22,6 +22,7 @@ export type CatalogFilters = {
   safety: SafetyFilter[];
   minPrice?: number; // МАЖОРНЫЕ единицы (как в URL/UI)
   maxPrice?: number;
+  onSale: boolean; // ?sale=1 — только товары со скидкой
   sort: SortOption;
 };
 

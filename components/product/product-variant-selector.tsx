@@ -151,6 +151,13 @@ export function ProductVariantSelector({
   const priceLabel = selected
     ? formatPrice(selected.priceMinor, locale)
     : t("priceFrom", { price: formatPrice(priceFromMinor, locale) });
+  // Старую цену и бейдж показываем только для выбранного варианта: до выбора
+  // непонятно, к какому размеру и цвету относилась бы скидка.
+  const oldPriceLabel =
+    selected && selected.compareAtMinor !== null
+      ? formatPrice(selected.compareAtMinor, locale)
+      : null;
+  const percent = selected?.discountPercent ?? null;
 
   // Подпись кнопки объясняет, почему она неактивна.
   let buttonLabel = t("selectVariantFirst");
@@ -179,7 +186,27 @@ export function ProductVariantSelector({
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="text-2xl font-semibold">{priceLabel}</div>
+      <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+        <span
+          className={
+            percent !== null
+              ? "text-2xl font-semibold text-primary"
+              : "text-2xl font-semibold"
+          }
+        >
+          {priceLabel}
+        </span>
+        {oldPriceLabel && (
+          <span className="text-base text-muted-foreground line-through">
+            {oldPriceLabel}
+          </span>
+        )}
+        {percent !== null && (
+          <span className="rounded-full bg-secondary px-2.5 py-1 text-sm font-bold text-secondary-foreground">
+            −{percent}%
+          </span>
+        )}
+      </div>
 
       {/* Размер */}
       <div>

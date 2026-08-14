@@ -14,6 +14,8 @@ export type CartItemVM = {
   imageUrl: string | null;
   imageAlt: string;
   unitPriceMinor: number; // текущая цена варианта
+  compareAtMinor: number | null; // старая цена, если есть скидка
+  discountPercent: number | null;
   quantity: number; // сохранённое количество
   maxStock: number; // текущий остаток
   lineTotalMinor: number; // с учётом доступности и остатка
@@ -25,6 +27,7 @@ export type CartItemVM = {
 export type CartVM = {
   items: CartItemVM[];
   subtotalMinor: number; // сумма доступных позиций
+  savingsMinor: number; // сколько сэкономлено на скидках (0 — скидок нет)
   count: number; // суммарное количество товаров
   hasIssues: boolean; // есть проблемные позиции (нет в наличии / кол-во уменьшено)
 };

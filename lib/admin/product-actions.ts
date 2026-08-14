@@ -19,6 +19,7 @@ type VariantInput = {
   colorAz: string;
   colorHex?: string;
   price: string | number; // в мажорных единицах (манаты) — конвертируем в минорные
+  compareAtPrice?: string | number; // «было»; пусто → скидки нет
   stock: string | number;
   stockLoaded?: string | number; // остаток на момент открытия формы (см. saveProduct)
   isActive?: boolean;
@@ -77,8 +78,17 @@ function buildVariantData(v: VariantInput) {
     colorAz: v.colorAz.trim(),
     colorHex: v.colorHex?.trim() || null,
     price: toMinor(v.price),
+    compareAtPrice: compareAtMinor(v),
     isActive: v.isActive ?? true,
   };
+}
+
+// Пустое поле «было» → null (скидки нет). Иначе — целые минорные единицы.
+function compareAtMinor(v: VariantInput): number | null {
+  const raw = String(v.compareAtPrice ?? "").trim();
+  if (!raw) return null;
+  const minor = toMinor(raw);
+  return Number.isFinite(minor) ? minor : null;
 }
 
 function toStock(v: string | number | undefined): number {
@@ -135,6 +145,12 @@ export async function saveProduct(
     if (!v.colorRu?.trim() || !v.colorAz?.trim()) return { error: "variant_color" };
     const minor = toMinor(v.price);
     if (!Number.isFinite(minor) || minor <= 0) return { error: "variant_price" };
+    // Старая цена (для зачёркивания) обязана быть выше текущей, иначе это
+    // не скидка. Пустое поле — нормально, значит скидки нет.
+    const compareAt = compareAtMinor(v);
+    if (compareAt !== null && compareAt <= minor) {
+      return { error: "variant_compare_at" };
+    }
   }
   // Пара «размер + цвет» уникальна в БД — проверяем сами, чтобы вместо
   // ошибки Prisma отдать понятное сообщение (те же правила, что в форме).

@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { CART_COOKIE, type CartVM, type CartItemVM } from "@/lib/cart-types";
+import { discountPercent, hasDiscount, savingsMinor } from "@/lib/discount";
 import type { Locale } from "@/i18n/routing";
 
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 180; // 180 дней
@@ -114,7 +115,13 @@ export async function getCartQuantitiesByVariant(
 }
 
 function emptyCart(): CartVM {
-  return { items: [], subtotalMinor: 0, count: 0, hasIssues: false };
+  return {
+    items: [],
+    subtotalMinor: 0,
+    savingsMinor: 0,
+    count: 0,
+    hasIssues: false,
+  };
 }
 
 // Полная корзина с пересчётом доступности/цены (обработка граничных случаев).
@@ -162,6 +169,10 @@ export async function getCart(locale: Locale): Promise<CartVM> {
       imageUrl: img?.url ?? null,
       imageAlt: (az ? img?.altAz : img?.altRu) || (az ? p.nameAz : p.nameRu),
       unitPriceMinor: v.price,
+      compareAtMinor: hasDiscount(v.price, v.compareAtPrice)
+        ? v.compareAtPrice
+        : null,
+      discountPercent: discountPercent(v.price, v.compareAtPrice),
       quantity: ci.quantity,
       maxStock: v.stock,
       lineTotalMinor: v.price * effectiveQty,
@@ -174,6 +185,16 @@ export async function getCart(locale: Locale): Promise<CartVM> {
   return {
     items,
     subtotalMinor: items.reduce((s, i) => s + i.lineTotalMinor, 0),
+    // Экономия считается только по позициям, которые реально можно купить.
+    savingsMinor: items.reduce(
+      (s, i) =>
+        i.available
+          ? s +
+            savingsMinor(i.unitPriceMinor, i.compareAtMinor) *
+              Math.min(i.quantity, i.maxStock)
+          : s,
+      0,
+    ),
     count: items.reduce((s, i) => s + i.quantity, 0),
     hasIssues: items.some((i) => !i.available || i.quantityReduced),
   };

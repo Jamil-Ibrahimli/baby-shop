@@ -54,6 +54,12 @@ export async function ProductGrid({
                   : p.sizeFromLabel
               }
               badges={badges}
+              discountPercent={p.discountPercent}
+              oldPriceLabel={
+                p.compareAtFromMinor !== null
+                  ? formatPrice(p.compareAtFromMinor, locale)
+                  : null
+              }
               isOrganic={p.isOrganic}
               ratingAvg={p.ratingAvg}
               ratingCount={p.ratingCount}

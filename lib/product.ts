@@ -3,6 +3,7 @@ import { cache } from "react";
 import { prisma } from "@/lib/prisma";
 import { SIZE_CODES, type SizeCode } from "@/lib/constants";
 import { colorKey } from "@/lib/color";
+import { discountPercent, hasDiscount } from "@/lib/discount";
 import type {
   ProductVariantVM,
   ProductDetailVM,
@@ -74,6 +75,10 @@ export const getProductBySlug = cache(async function getProductBySlug(
       colorKey: colorKey(v.colorRu),
       colorHex: v.colorHex,
       priceMinor: v.price,
+      compareAtMinor: hasDiscount(v.price, v.compareAtPrice)
+        ? v.compareAtPrice
+        : null,
+      discountPercent: discountPercent(v.price, v.compareAtPrice),
       stock: v.stock,
       available: v.isActive && v.stock > 0,
     }))

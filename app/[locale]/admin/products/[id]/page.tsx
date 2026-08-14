@@ -84,6 +84,8 @@ export default async function EditProductPage({
       colorAz: v.colorAz,
       colorHex: v.colorHex ?? "",
       price: (v.price / 100).toFixed(2),
+      compareAtPrice:
+        v.compareAtPrice != null ? (v.compareAtPrice / 100).toFixed(2) : "",
       stock: String(v.stock),
       stockLoaded: String(v.stock),
       isActive: v.isActive,

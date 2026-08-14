@@ -139,11 +139,16 @@ export function CartItemRow({
         </div>
       </div>
 
-      {/* Цена */}
+      {/* Цена (+ старая цена, если товар по акции) */}
       <div className="flex shrink-0 flex-col items-end justify-between text-right">
         <span className="text-sm font-semibold">
           {formatPrice(item.lineTotalMinor, locale)}
         </span>
+        {item.compareAtMinor !== null && item.available && (
+          <span className="text-xs text-muted-foreground line-through">
+            {formatPrice(item.compareAtMinor * item.quantity, locale)}
+          </span>
+        )}
         {item.quantity > 1 && item.available && (
           <span className="text-xs text-muted-foreground">
             {formatPrice(item.unitPriceMinor, locale)} {t("each")}

@@ -74,8 +74,18 @@ export default async function OrderConfirmationPage({
                   {(az ? i.colorAz : i.colorRu)} × {i.quantity}
                 </span>
               </span>
-              <span className="shrink-0 font-medium">
+              <span className="shrink-0 text-right font-medium">
                 {formatMoney(i.lineTotal, order.currency, loc)}
+                {/* Куплено по акции — показываем, сколько стоило до скидки. */}
+                {i.compareAtPrice !== null && (
+                  <span className="block text-xs font-normal text-muted-foreground line-through">
+                    {formatMoney(
+                      i.compareAtPrice * i.quantity,
+                      order.currency,
+                      loc,
+                    )}
+                  </span>
+                )}
               </span>
             </li>
           ))}

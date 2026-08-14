@@ -1,6 +1,7 @@
 import "server-only";
 import { prisma } from "@/lib/prisma";
 import { SIZE_CODES, SIZE_TABLE, type SizeCode } from "@/lib/constants";
+import { discountPercent, hasDiscount } from "@/lib/discount";
 import {
   SAFETY_FILTERS,
   SORT_OPTIONS,
@@ -42,7 +43,9 @@ export function parseFilters(sp: RawSearchParams): CatalogFilters {
     ? (rawSort as SortOption)
     : DEFAULT_SORT;
 
-  return { category, sizes, safety, minPrice, maxPrice, sort };
+  const onSale = firstValue(sp.sale) === "1";
+
+  return { category, sizes, safety, minPrice, maxPrice, onSale, sort };
 }
 
 function numberOrUndefined(v: string | undefined): number | undefined {
@@ -137,6 +140,9 @@ export type ProductCardVM = {
   isBundle: boolean;
   isOrganic: boolean;
   priceFromMinor: number;
+  // Скидка показывается по тому же варианту, что дал цену «от».
+  compareAtFromMinor: number | null;
+  discountPercent: number | null;
   sizeFromLabel: string | null;
   sizeToLabel: string | null;
   ratingAvg: number | null;
@@ -181,6 +187,10 @@ export async function getCatalogProducts(
     isActive: true,
     ...(filters.sizes.length ? { sizeCode: { in: filters.sizes } } : {}),
     ...priceFilter,
+    // «Только со скидкой»: у товара есть вариант со старой ценой. Условие
+    // «старая > текущей» в SQL не выразить, поэтому здесь грубый отбор по
+    // наличию поля, а точная проверка — ниже, при сборке карточек.
+    ...(filters.onSale ? { compareAtPrice: { not: null } } : {}),
   };
 
   const products = await prisma.product.findMany({
@@ -201,7 +211,7 @@ export async function getCatalogProducts(
       images: { orderBy: { sortOrder: "asc" }, take: 1 },
       variants: {
         where: { isActive: true },
-        select: { price: true, sizeCode: true },
+        select: { price: true, sizeCode: true, compareAtPrice: true },
       },
       reviews: { select: { rating: true } },
     },
@@ -209,6 +219,23 @@ export async function getCatalogProducts(
 
   const cards = products.map((p) => {
     const prices = p.variants.map((v) => v.price);
+    // Карточка показывает цену «от» — скидку берём у того же варианта.
+    // При равных ценах выбираем вариант с большей скидкой: иначе у товара, где
+    // уценён только один размер из пяти одинаковых по цене, бейдж не появился бы.
+    const cheapest = p.variants.reduce<(typeof p.variants)[number] | null>(
+      (best, v) => {
+        if (best === null || v.price < best.price) return v;
+        if (v.price > best.price) return best;
+        const vPercent = discountPercent(v.price, v.compareAtPrice) ?? 0;
+        const bestPercent = discountPercent(best.price, best.compareAtPrice) ?? 0;
+        return vPercent > bestPercent ? v : best;
+      },
+      null,
+    );
+    const compareAtFromMinor =
+      cheapest && hasDiscount(cheapest.price, cheapest.compareAtPrice)
+        ? cheapest.compareAtPrice
+        : null;
     const { fromLabel, toLabel } = sizeRange(
       p.variants.map((v) => v.sizeCode),
       locale,
@@ -229,6 +256,10 @@ export async function getCatalogProducts(
       isBundle: p.isBundle,
       isOrganic: p.isOrganic,
       priceFromMinor: prices.length ? Math.min(...prices) : 0,
+      compareAtFromMinor,
+      discountPercent: cheapest
+        ? discountPercent(cheapest.price, cheapest.compareAtPrice)
+        : null,
       sizeFromLabel: fromLabel,
       sizeToLabel: toLabel,
       ratingAvg,
@@ -236,13 +267,19 @@ export async function getCatalogProducts(
     };
   });
 
+  // Точный отбор «со скидкой»: в запросе мы лишь проверили, что поле заполнено,
+  // а скидка считается только когда старая цена выше текущей.
+  const visible = filters.onSale
+    ? cards.filter((c) => c.discountPercent !== null)
+    : cards;
+
   // Сортировка по цене — в памяти: цена карточки = минимум по вариантам.
   // «popular» оставляет порядок БД (по дате создания).
   if (filters.sort === "price_asc") {
-    cards.sort((a, b) => a.priceFromMinor - b.priceFromMinor);
+    visible.sort((a, b) => a.priceFromMinor - b.priceFromMinor);
   } else if (filters.sort === "price_desc") {
-    cards.sort((a, b) => b.priceFromMinor - a.priceFromMinor);
+    visible.sort((a, b) => b.priceFromMinor - a.priceFromMinor);
   }
 
-  return cards;
+  return visible;
 }

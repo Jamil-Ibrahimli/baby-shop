@@ -13,6 +13,7 @@ import {
   findDuplicateComboIndexes,
   findDuplicateSkuIndexes,
 } from "@/lib/variant-dupes";
+import { discountPercent, parseMajorToMinor } from "@/lib/discount";
 import { brand } from "@/config/brand";
 import { type VariantItem, newKey } from "./product-form-types";
 
@@ -46,10 +47,22 @@ export function VariantEditor({
         colorAz: "",
         colorHex: "",
         price: "",
+        compareAtPrice: "",
         stock: "0",
         isActive: true,
       },
     ]);
+  }
+
+  // «Старую цену» этого варианта проставляем во ВСЕ остальные — по кнопке,
+  // чтобы не вбивать её в каждый вариант руками. Само ничего не считается:
+  // копируется ровно введённое число, дальше правится вручную.
+  function applyCompareAtToAll(key: string) {
+    const source = variants.find((v) => v.key === key);
+    if (!source) return;
+    onChange(
+      variants.map((v) => ({ ...v, compareAtPrice: source.compareAtPrice })),
+    );
   }
   function update(key: string, patch: Partial<VariantItem>) {
     onChange(variants.map((v) => (v.key === key ? { ...v, ...patch } : v)));
@@ -86,6 +99,15 @@ export function VariantEditor({
       {variants.map((v, i) => {
         const comboDup = duplicateCombos.has(i);
         const skuDup = duplicateSkus.has(i);
+        // Скидка: старая цена должна быть больше текущей, иначе это ошибка ввода.
+        const priceMinor = parseMajorToMinor(v.price);
+        const compareMinor = parseMajorToMinor(v.compareAtPrice);
+        const compareAtInvalid =
+          compareMinor !== null &&
+          priceMinor !== null &&
+          compareMinor <= priceMinor;
+        const percent =
+          priceMinor !== null ? discountPercent(priceMinor, compareMinor) : null;
         // Короткая сводка в шапке карточки — чтобы длинный список читался.
         const sizeLabel = SIZE_TABLE[v.sizeCode as SizeCode]
           ? locale === "az"
@@ -189,7 +211,7 @@ export function VariantEditor({
               onChange={(next) => update(v.key, { colorHex: next })}
             />
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-3 sm:col-span-2 sm:grid-cols-3">
               <TextField
                 label={t("price")}
                 type="text"
@@ -200,6 +222,21 @@ export function VariantEditor({
                 onChange={(next) => update(v.key, { price: next })}
               />
               <TextField
+                label={t("compareAtPrice")}
+                type="text"
+                inputMode="decimal"
+                value={v.compareAtPrice}
+                placeholder={t("compareAtPlaceholder")}
+                suffix={brand.currency}
+                error={
+                  compareAtInvalid ? t("compareAtTooLow") : undefined
+                }
+                hint={
+                  percent !== null ? t("discountHint", { percent }) : undefined
+                }
+                onChange={(next) => update(v.key, { compareAtPrice: next })}
+              />
+              <TextField
                 label={t("stock")}
                 type="number"
                 min={0}
@@ -208,6 +245,17 @@ export function VariantEditor({
                 onChange={(next) => update(v.key, { stock: next })}
               />
             </div>
+
+            {/* Проставить эту же старую цену остальным вариантам — по кнопке. */}
+            {variants.length > 1 && v.compareAtPrice.trim() !== "" && (
+              <button
+                type="button"
+                onClick={() => applyCompareAtToAll(v.key)}
+                className="w-fit text-sm font-medium text-primary hover:underline sm:col-span-2"
+              >
+                {t("applyCompareAtToAll")}
+              </button>
+            )}
 
             <div className="sm:col-span-2">
               <CheckField

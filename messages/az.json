@@ -65,7 +65,8 @@
         "hypoallergenic": "Hipoallergen",
         "cotton100": "100% pambıq",
         "bundle": "Dəst"
-      }
+      },
+      "onSale": "Yalnız endirimli"
     },
     "Card": {
       "bundle": "Dəst",
@@ -309,8 +310,14 @@
         "variant_color": "Variantın rəngini hər iki dildə göstərin",
         "variant_combo_dup": "Eyni ölçü və rəngə malik variantlar var — onlar işarələnib. Ölçünü və ya rəngi dəyişin, ya da artıq variantı silin.",
         "variant_price": "Variantın qiyməti sıfırdan böyük olmalıdır",
-        "sku_or_variant_taken": "Artikul və ya ölçü+rəng uyğunluğu artıq mövcuddur"
-      }
+        "sku_or_variant_taken": "Artikul və ya ölçü+rəng uyğunluğu artıq mövcuddur",
+        "variant_compare_at": "Köhnə qiymət cari qiymətdən böyük olmalıdır — düzəldin və ya sahəni boşaldın."
+      },
+      "compareAtPrice": "Köhnə qiymət",
+      "compareAtPlaceholder": "endirimsiz",
+      "compareAtTooLow": "Köhnə qiymət cari qiymətdən böyük olmalıdır",
+      "discountHint": "Endirim −{percent}%",
+      "applyCompareAtToAll": "Bu köhnə qiyməti bütün variantlara qoy"
     },
     "Categories": {
       "title": "Kateqoriyalar",
@@ -479,6 +486,7 @@
       "title": "Səbət boşdur",
       "description": "Kataloqa baxın və körpəniz üçün nəsə seçin.",
       "cta": "Kataloqa"
-    }
+    },
+    "savings": "Qənaətiniz"
   }
 }

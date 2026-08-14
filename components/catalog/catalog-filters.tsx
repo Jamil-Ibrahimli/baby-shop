@@ -95,6 +95,7 @@ export function CatalogFilters({
   const [category, setCategory] = useState(filters.category ?? "");
   const [sizes, setSizes] = useState<string[]>(filters.sizes);
   const [safety, setSafety] = useState<string[]>(filters.safety);
+  const [onSale, setOnSale] = useState(filters.onSale);
   const [price, setPrice] = useState<[number, number]>([
     filters.minPrice ?? priceBounds.min,
     filters.maxPrice ?? priceBounds.max,
@@ -116,6 +117,7 @@ export function CatalogFilters({
     if (category) params.set("category", category);
     if (sizes.length) params.set("size", sizes.join(","));
     if (safety.length) params.set("safety", safety.join(","));
+    if (onSale) params.set("sale", "1");
     if (priceEnabled && price[0] > priceBounds.min)
       params.set("min", String(price[0]));
     if (priceEnabled && price[1] < priceBounds.max)
@@ -130,6 +132,7 @@ export function CatalogFilters({
     setCategory("");
     setSizes([]);
     setSafety([]);
+    setOnSale(false);
     setPrice([priceBounds.min, priceBounds.max]);
     router.push(pathname, { scroll: false });
     onApplied?.();
@@ -158,6 +161,18 @@ export function CatalogFilters({
       ) : (
         <div className="flex justify-end">{ResetLink}</div>
       )}
+
+      {/* Акции — отдельной строкой над остальными фильтрами, это «горячий» отбор */}
+      <div className="flex items-center gap-2 rounded-xl bg-secondary-light px-3 py-2.5">
+        <Checkbox
+          id="filter-sale"
+          checked={onSale}
+          onCheckedChange={(next) => setOnSale(next === true)}
+        />
+        <Label htmlFor="filter-sale" className="font-medium">
+          {t("Filters.onSale")}
+        </Label>
+      </div>
 
       {/* Категория */}
       <FilterSection title={t("Filters.category")}>

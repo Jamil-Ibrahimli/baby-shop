@@ -12,6 +12,8 @@ export type ProductVariantVM = {
   colorKey: string; // ключ цвета (по colorRu) для сопоставления с фото
   colorHex: string | null;
   priceMinor: number;
+  compareAtMinor: number | null; // старая цена, если у варианта есть скидка
+  discountPercent: number | null;
   stock: number;
   available: boolean; // isActive && stock > 0
 };

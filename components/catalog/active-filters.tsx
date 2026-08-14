@@ -77,6 +77,14 @@ export function ActiveFilters({
     });
   }
 
+  if (filters.onSale) {
+    chips.push({
+      key: "sale",
+      label: t("onSale"),
+      clear: () => remove((p) => p.delete("sale")),
+    });
+  }
+
   if (filters.minPrice !== undefined || filters.maxPrice !== undefined) {
     const from = filters.minPrice !== undefined ? formatPrice(filters.minPrice * 100, locale) : "…";
     const to = filters.maxPrice !== undefined ? formatPrice(filters.maxPrice * 100, locale) : "…";

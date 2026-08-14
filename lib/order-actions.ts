@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { getActiveCartWithItems } from "@/lib/cart";
+import { hasDiscount } from "@/lib/discount";
 import { notifyNewOrder, type OrderNotificationData } from "@/lib/notifications";
 import { brand } from "@/config/brand";
 import { routing } from "@/i18n/routing";
@@ -119,6 +120,11 @@ export async function placeOrder(
           sku: v.sku,
           imageUrl: v.product.images[0]?.url ?? null,
           unitPrice: v.price,
+          // Старая цена — часть снапшота: видно, что вещь ушла по акции.
+          // На сумму заказа не влияет, считаем по unitPrice.
+          compareAtPrice: hasDiscount(v.price, v.compareAtPrice)
+            ? v.compareAtPrice
+            : null,
           quantity: item.quantity,
           lineTotal,
         });

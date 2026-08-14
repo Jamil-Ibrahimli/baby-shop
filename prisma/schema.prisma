@@ -169,6 +169,10 @@ model ProductVariant {
   colorHex String? // для свотча цвета в UI
 
   price  Int // минорные единицы валюты (см. заметку о деньгах)
+  // Цена «до скидки» (зачёркнутая). null — скидки нет. Продажа всегда идёт по
+  // price, поэтому расчёты корзины и заказа этого поля не касаются: оно только
+  // для показа старой цены и процента.
+  compareAtPrice Int?
   stock  Int     @default(0)
   isActive Boolean @default(true)
 
@@ -351,6 +355,9 @@ model OrderItem {
   sku           String
   imageUrl      String?
   unitPrice     Int // минорные единицы
+  // Старая цена на момент покупки: видно, что вещь ушла по акции. На сумму
+  // заказа не влияет — считается по unitPrice.
+  compareAtPrice Int?
   quantity      Int
   lineTotal     Int
 

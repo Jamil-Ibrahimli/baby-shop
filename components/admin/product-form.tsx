@@ -14,6 +14,7 @@ import {
 } from "./form-fields";
 import { saveProduct, deleteProduct } from "@/lib/admin/product-actions";
 import { findDuplicateComboIndexes } from "@/lib/variant-dupes";
+import { parseMajorToMinor } from "@/lib/discount";
 import { VariantEditor } from "./variant-editor";
 import { ImageUploader } from "./image-uploader";
 import { ColorImagesEditor } from "./color-images-editor";
@@ -76,6 +77,16 @@ export function ProductForm({
       setError(t("Errors.variant_combo_dup"));
       return;
     }
+    // Старая цена ниже текущей — скидка «наоборот», такое сохранять нельзя.
+    const badCompareAt = f.variants.some((v) => {
+      const price = parseMajorToMinor(v.price);
+      const compareAt = parseMajorToMinor(v.compareAtPrice);
+      return compareAt !== null && price !== null && compareAt <= price;
+    });
+    if (badCompareAt) {
+      setError(t("Errors.variant_compare_at"));
+      return;
+    }
     const fd = new FormData();
     fd.set("id", f.id ?? "");
     fd.set("slug", f.slug);
@@ -107,6 +118,7 @@ export function ProductForm({
           colorAz: v.colorAz,
           colorHex: v.colorHex,
           price: v.price,
+          compareAtPrice: v.compareAtPrice,
           stock: v.stock,
           stockLoaded: v.stockLoaded,
           isActive: v.isActive,
