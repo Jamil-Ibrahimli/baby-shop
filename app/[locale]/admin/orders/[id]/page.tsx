@@ -5,7 +5,7 @@ import { Phone, Mail, MapPin, Gift, MessageSquare, User } from "lucide-react";
 import { routing, type Locale } from "@/i18n/routing";
 import { Link } from "@/i18n/navigation";
 import { getAdminOrderById } from "@/lib/admin/orders";
-import { formatMoney } from "@/lib/format";
+import { dateFormat, formatMoney } from "@/lib/format";
 import { OrderStatusBadge } from "@/components/admin/order-status-badge";
 import { OrderStatusControl } from "@/components/admin/order-status-control";
 
@@ -26,7 +26,7 @@ export default async function AdminOrderDetailPage({
 
   const t = await getTranslations("Admin.Orders");
 
-  const dateFmt = new Intl.DateTimeFormat(az ? "az-AZ" : "ru-RU", {
+  const dateFmt = dateFormat(loc, {
     dateStyle: "medium",
     timeStyle: "short",
   });

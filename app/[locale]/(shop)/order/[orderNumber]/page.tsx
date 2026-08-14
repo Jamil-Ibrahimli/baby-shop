@@ -8,7 +8,7 @@ import { auth } from "@/auth";
 import { routing, type Locale } from "@/i18n/routing";
 import { Link } from "@/i18n/navigation";
 import { buttonVariants } from "@/components/ui/button";
-import { formatMoney } from "@/lib/format";
+import { dateFormat, formatMoney } from "@/lib/format";
 import { OrderProgress } from "@/components/order/order-progress";
 
 export default async function OrderConfirmationPage({
@@ -40,9 +40,7 @@ export default async function OrderConfirmationPage({
   // Подписи статусов рисует OrderProgress — здесь они больше не нужны.
   const t = await getTranslations("Order");
   const az = loc === "az";
-  const dateFmt = new Intl.DateTimeFormat(az ? "az-AZ" : "ru-RU", {
-    dateStyle: "long",
-  });
+  const dateFmt = dateFormat(loc, { dateStyle: "long" });
 
   return (
     <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-10 sm:px-6">

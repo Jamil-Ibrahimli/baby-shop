@@ -1,10 +1,18 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { Plus, Trash2 } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { SIZE_CODES, SIZE_TABLE } from "@/lib/constants";
+import { Copy, Plus, Trash2 } from "lucide-react";
+import {
+  CheckField,
+  ColorField,
+  SelectField,
+  TextField,
+} from "./form-fields";
+import { SIZE_CODES, SIZE_TABLE, type SizeCode } from "@/lib/constants";
+import {
+  findDuplicateComboIndexes,
+  findDuplicateSkuIndexes,
+} from "@/lib/variant-dupes";
 import { brand } from "@/config/brand";
 import { type VariantItem, newKey } from "./product-form-types";
 
@@ -14,12 +22,18 @@ export function VariantEditor({
   locale,
   variants,
   onChange,
+  showStockHint = false,
 }: {
   locale: "ru" | "az";
   variants: VariantItem[];
   onChange: (next: VariantItem[]) => void;
+  showStockHint?: boolean; // только при редактировании: у товара уже есть остатки
 }) {
   const t = useTranslations("Admin.Products");
+
+  // Повторы считаем на каждый рендер — состояние не дублируем.
+  const duplicateCombos = findDuplicateComboIndexes(variants);
+  const duplicateSkus = findDuplicateSkuIndexes(variants);
 
   function add() {
     onChange([
@@ -43,24 +57,101 @@ export function VariantEditor({
   function remove(key: string) {
     onChange(variants.filter((v) => v.key !== key));
   }
+  // Копия варианта встаёт сразу под оригиналом. Переносим всё, кроме:
+  // id (в БД это новая строка) и остатка (его админ задаёт заново).
+  // Остальные поля НЕ подставляем и не меняем — правит их админ вручную.
+  function duplicate(key: string) {
+    const index = variants.findIndex((v) => v.key === key);
+    if (index < 0) return;
+    const copy: VariantItem = { ...variants[index], key: newKey(), stock: "0" };
+    delete copy.id;
+    delete copy.stockLoaded; // копии в БД ещё нет — её остаток пишется как есть
+    onChange([
+      ...variants.slice(0, index + 1),
+      copy,
+      ...variants.slice(index + 1),
+    ]);
+  }
 
   return (
     <div className="flex flex-col gap-3">
+      {showStockHint && (
+        <p className="text-sm text-muted-foreground">{t("stockHint")}</p>
+      )}
+
       {variants.length === 0 && (
         <p className="text-sm text-muted-foreground">{t("noVariants")}</p>
       )}
 
-      {variants.map((v) => (
-        <div
-          key={v.key}
-          className="grid gap-3 rounded-xl border border-border p-3 sm:grid-cols-2"
-        >
-          <div className="flex flex-col gap-1.5">
-            <Label>{t("size")}</Label>
-            <select
+      {variants.map((v, i) => {
+        const comboDup = duplicateCombos.has(i);
+        const skuDup = duplicateSkus.has(i);
+        // Короткая сводка в шапке карточки — чтобы длинный список читался.
+        const sizeLabel = SIZE_TABLE[v.sizeCode as SizeCode]
+          ? locale === "az"
+            ? SIZE_TABLE[v.sizeCode as SizeCode].labelAz
+            : SIZE_TABLE[v.sizeCode as SizeCode].labelRu
+          : v.sizeCode;
+        const colorName = (locale === "az" ? v.colorAz : v.colorRu).trim();
+        return (
+          <div
+            key={v.key}
+            className={
+              comboDup
+                ? "grid gap-3 rounded-xl border border-destructive bg-destructive/5 p-3 sm:grid-cols-2"
+                : "grid gap-3 rounded-xl border border-border bg-surface p-3 sm:grid-cols-2"
+            }
+          >
+            {/* Шапка карточки: номер, размер+цвет и действия над вариантом. */}
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-2 sm:col-span-2">
+              <span className="flex min-w-0 items-center gap-2 text-sm font-semibold">
+                {v.colorHex && (
+                  <span
+                    className="size-4 shrink-0 rounded-full border border-black/10"
+                    style={{ backgroundColor: v.colorHex }}
+                    aria-hidden
+                  />
+                )}
+                <span className="truncate">
+                  {t("variantNumber", { number: i + 1 })}
+                  <span className="ml-2 font-normal text-muted-foreground">
+                    {colorName ? `${sizeLabel} · ${colorName}` : sizeLabel}
+                  </span>
+                </span>
+              </span>
+              <div className="flex shrink-0 items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => duplicate(v.key)}
+                  className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+                >
+                  <Copy className="size-4" aria-hidden />
+                  {t("duplicateVariant")}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => remove(v.key)}
+                  className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-destructive"
+                >
+                  <Trash2 className="size-4" aria-hidden />
+                  <span className="sr-only sm:not-sr-only">
+                    {t("removeVariant")}
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            {comboDup && (
+              <p className="text-sm text-destructive sm:col-span-2">
+                {t("variantComboDuplicate")}
+              </p>
+            )}
+
+            <SelectField
+              label={t("size")}
               value={v.sizeCode}
-              onChange={(e) => update(v.key, { sizeCode: e.target.value })}
-              className="h-9 rounded-xl border border-border bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+              invalid={comboDup}
+              onChange={(next) => update(v.key, { sizeCode: next })}
             >
               {SIZE_CODES.map((code) => (
                 <option key={code} value={code}>
@@ -69,100 +160,71 @@ export function VariantEditor({
                     : SIZE_TABLE[code].labelRu}
                 </option>
               ))}
-            </select>
-          </div>
+            </SelectField>
 
-          <div className="flex flex-col gap-1.5">
-            <Label>{t("sku")}</Label>
-            <Input
+            <TextField
+              label={t("sku")}
               value={v.sku}
               placeholder="BODY-0-3m-white"
-              onChange={(e) => update(v.key, { sku: e.target.value })}
+              mono
+              error={skuDup ? t("variantSkuDuplicate") : undefined}
+              onChange={(next) => update(v.key, { sku: next })}
             />
-          </div>
 
-          <div className="flex flex-col gap-1.5">
-            <Label>{t("colorRu")}</Label>
-            <Input
+            <TextField
+              label={t("colorRu")}
               value={v.colorRu}
-              onChange={(e) => update(v.key, { colorRu: e.target.value })}
+              invalid={comboDup}
+              onChange={(next) => update(v.key, { colorRu: next })}
             />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <Label>{t("colorAz")}</Label>
-            <Input
+            <TextField
+              label={t("colorAz")}
               value={v.colorAz}
-              onChange={(e) => update(v.key, { colorAz: e.target.value })}
+              onChange={(next) => update(v.key, { colorAz: next })}
             />
-          </div>
 
-          <div className="flex flex-col gap-1.5">
-            <Label>{t("colorHex")}</Label>
-            <div className="flex items-center gap-2">
-              <input
-                type="color"
-                value={v.colorHex || "#ffffff"}
-                onChange={(e) => update(v.key, { colorHex: e.target.value })}
-                className="h-9 w-12 shrink-0 rounded border border-border bg-background"
-              />
-              <Input
-                value={v.colorHex}
-                placeholder="#ffffff"
-                onChange={(e) => update(v.key, { colorHex: e.target.value })}
-              />
-            </div>
-          </div>
+            <ColorField
+              label={t("colorHex")}
+              value={v.colorHex}
+              onChange={(next) => update(v.key, { colorHex: next })}
+            />
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="flex flex-col gap-1.5">
-              <Label>
-                {t("price")} ({brand.currency})
-              </Label>
-              <Input
+            <div className="grid grid-cols-2 gap-3">
+              <TextField
+                label={t("price")}
                 type="text"
                 inputMode="decimal"
                 value={v.price}
                 placeholder="12.90"
-                onChange={(e) => update(v.key, { price: e.target.value })}
+                suffix={brand.currency}
+                onChange={(next) => update(v.key, { price: next })}
               />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <Label>{t("stock")}</Label>
-              <Input
+              <TextField
+                label={t("stock")}
                 type="number"
                 min={0}
                 value={v.stock}
-                onChange={(e) => update(v.key, { stock: e.target.value })}
+                suffix={t("unitsShort")}
+                onChange={(next) => update(v.key, { stock: next })}
+              />
+            </div>
+
+            <div className="sm:col-span-2">
+              <CheckField
+                label={t("variantActive")}
+                checked={v.isActive}
+                onChange={(next) => update(v.key, { isActive: next })}
               />
             </div>
           </div>
+        );
+      })}
 
-          <div className="flex items-center justify-between sm:col-span-2">
-            <label className="flex items-center gap-2 text-sm">
-              <input
-                type="checkbox"
-                checked={v.isActive}
-                onChange={(e) => update(v.key, { isActive: e.target.checked })}
-                className="size-4 accent-primary"
-              />
-              {t("variantActive")}
-            </label>
-            <button
-              type="button"
-              onClick={() => remove(v.key)}
-              className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-destructive"
-            >
-              <Trash2 className="size-4" aria-hidden />
-              {t("removeVariant")}
-            </button>
-          </div>
-        </div>
-      ))}
-
+      {/* Пунктирная полоса-«добавить» читается как продолжение списка вариантов. */}
       <button
         type="button"
         onClick={add}
-        className="inline-flex w-fit items-center gap-2 rounded-full border border-border px-4 py-2 text-sm transition-colors hover:bg-muted"
+        className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-input py-3 text-sm font-medium text-muted-foreground transition-colors hover:border-primary hover:bg-primary-soft/50 hover:text-primary"
       >
         <Plus className="size-4" aria-hidden />
         {t("addVariant")}

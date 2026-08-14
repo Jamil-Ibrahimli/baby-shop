@@ -6,6 +6,7 @@ import { hasLocale } from "next-intl";
 import { ChevronLeft } from "lucide-react";
 import { routing, type Locale } from "@/i18n/routing";
 import { getProductBySlug, productExists } from "@/lib/product";
+import { getCartQuantitiesByVariant } from "@/lib/cart";
 import { Link } from "@/i18n/navigation";
 import { ProductGallery } from "@/components/product/product-gallery";
 import { ProductVariantSelector } from "@/components/product/product-variant-selector";
@@ -75,6 +76,12 @@ async function ProductContent({
   // Товар точно существует (проверено выше), но на всякий случай:
   if (!product) notFound();
 
+  // Что из этого товара уже в корзине — чтобы кнопка знала свой предел.
+  // router.refresh() после добавления перечитывает эти числа.
+  const inCart = await getCartQuantitiesByVariant(
+    product.variants.map((v) => v.id),
+  );
+
   return (
     <>
       <ColorSelectionProvider>
@@ -97,6 +104,7 @@ async function ProductContent({
               variants={product.variants}
               priceFromMinor={product.priceFromMinor}
               locale={locale}
+              inCart={inCart}
               sizeGuideSlot={<SizeGuideDialog locale={locale} />}
             />
 

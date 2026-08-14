@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { getAdminUser } from "@/lib/admin/guard";
 import { sanitizeSlug } from "@/lib/admin/slug";
 import { colorKey } from "@/lib/color";
+import { findDuplicateComboIndexes } from "@/lib/variant-dupes";
 import { SIZE_CODES, SIZE_TABLE, type SizeCode } from "@/lib/constants";
 
 export type ProductActionState = { error?: string; ok?: boolean; id?: string };
@@ -19,6 +20,7 @@ type VariantInput = {
   colorHex?: string;
   price: string | number; // в мажорных единицах (манаты) — конвертируем в минорные
   stock: string | number;
+  stockLoaded?: string | number; // остаток на момент открытия формы (см. saveProduct)
   isActive?: boolean;
 };
 type ImageInput = {
@@ -61,6 +63,7 @@ function parseJson<T>(raw: string): T[] {
 }
 
 // Преобразуем вход варианта в данные БД (подписи размера/рост берём из справочника).
+// Остаток сюда НЕ входит — он пишется отдельно, см. stockPatch().
 function buildVariantData(v: VariantInput) {
   const size = SIZE_TABLE[v.sizeCode as SizeCode];
   return {
@@ -74,9 +77,23 @@ function buildVariantData(v: VariantInput) {
     colorAz: v.colorAz.trim(),
     colorHex: v.colorHex?.trim() || null,
     price: toMinor(v.price),
-    stock: Number.parseInt(String(v.stock), 10) || 0,
     isActive: v.isActive ?? true,
   };
+}
+
+function toStock(v: string | number | undefined): number {
+  return Number.parseInt(String(v ?? ""), 10) || 0;
+}
+
+// Остаток обновляем ТОЛЬКО если админ правил поле руками. Форма присылает
+// stockLoaded — число, которое она получила из БД при открытии страницы. Если
+// оно совпадает с отправленным, поле не трогали: между открытием формы и
+// сохранением могли пройти заказы, и запись «старого» числа вернула бы уже
+// списанный товар на склад. У новых вариантов stockLoaded нет — пишем как есть.
+function stockPatch(v: VariantInput): { stock?: number } {
+  const untouched =
+    v.stockLoaded !== undefined && toStock(v.stockLoaded) === toStock(v.stock);
+  return untouched ? {} : { stock: toStock(v.stock) };
 }
 
 function isUniqueError(e: unknown): boolean {
@@ -118,6 +135,11 @@ export async function saveProduct(
     if (!v.colorRu?.trim() || !v.colorAz?.trim()) return { error: "variant_color" };
     const minor = toMinor(v.price);
     if (!Number.isFinite(minor) || minor <= 0) return { error: "variant_price" };
+  }
+  // Пара «размер + цвет» уникальна в БД — проверяем сами, чтобы вместо
+  // ошибки Prisma отдать понятное сообщение (те же правила, что в форме).
+  if (findDuplicateComboIndexes(variants).size > 0) {
+    return { error: "variant_combo_dup" };
   }
 
   const categoryId = str(formData.get("categoryId")) || null;
@@ -176,9 +198,14 @@ export async function saveProduct(
       for (const v of variants) {
         const data = buildVariantData(v);
         if (v.id) {
-          await tx.productVariant.update({ where: { id: v.id }, data });
+          await tx.productVariant.update({
+            where: { id: v.id },
+            data: { ...data, ...stockPatch(v) },
+          });
         } else {
-          await tx.productVariant.create({ data: { ...data, productId: pid! } });
+          await tx.productVariant.create({
+            data: { ...data, stock: toStock(v.stock), productId: pid! },
+          });
         }
       }
 

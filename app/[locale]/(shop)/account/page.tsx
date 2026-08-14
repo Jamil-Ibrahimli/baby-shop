@@ -6,7 +6,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { routing, type Locale } from "@/i18n/routing";
 import { Link } from "@/i18n/navigation";
-import { formatMoney } from "@/lib/format";
+import { dateFormat, formatMoney } from "@/lib/format";
 import { getCustomerUnreadCount } from "@/lib/notifications";
 import { LogoutButton } from "@/components/auth/logout-button";
 
@@ -54,9 +54,7 @@ export default async function AccountPage({
   ]);
 
   const tNotif = await getTranslations("Notifications");
-  const dateFmt = new Intl.DateTimeFormat(loc === "az" ? "az-AZ" : "ru-RU", {
-    dateStyle: "medium",
-  });
+  const dateFmt = dateFormat(loc, { dateStyle: "medium" });
   const roleLabel =
     session.user.role === "admin" ? t("roleAdmin") : t("roleCustomer");
 

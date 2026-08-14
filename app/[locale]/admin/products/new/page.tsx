@@ -55,7 +55,9 @@ export default async function NewProductPage({
         <span>/</span>
         <span>{t("add")}</span>
       </div>
-      <h1 className="mb-5 text-2xl font-semibold sm:text-3xl">{t("add")}</h1>
+      <h1 className="mb-5 font-heading text-2xl font-bold sm:text-3xl">
+        {t("add")}
+      </h1>
       <ProductForm
         locale={loc}
         categories={categories}

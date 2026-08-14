@@ -93,6 +93,26 @@ export async function getCartCount(): Promise<number> {
   return agg._sum.quantity ?? 0;
 }
 
+// Сколько единиц каждого варианта уже лежит в корзине. Нужно странице товара,
+// чтобы кнопка «В корзину» знала, можно ли добавить ещё (остаток считается
+// по конкретному варианту: размер+цвет). Склад при этом не резервируется.
+export async function getCartQuantitiesByVariant(
+  variantIds: string[],
+): Promise<Record<string, number>> {
+  if (variantIds.length === 0) return {};
+  const filter = await activeCartFilter();
+  if (!filter) return {};
+
+  const items = await prisma.cartItem.findMany({
+    where: { cart: filter, variantId: { in: variantIds } },
+    select: { variantId: true, quantity: true },
+  });
+
+  const map: Record<string, number> = {};
+  for (const i of items) map[i.variantId] = i.quantity;
+  return map;
+}
+
 function emptyCart(): CartVM {
   return { items: [], subtotalMinor: 0, count: 0, hasIssues: false };
 }

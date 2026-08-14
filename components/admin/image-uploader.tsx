@@ -4,6 +4,8 @@ import { useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Upload, Trash2, ArrowUp, ArrowDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { compressImage } from "@/lib/image-compress";
+import { CONTROL_CLASS } from "./form-fields";
 import { type ImageItem, newKey } from "./product-form-types";
 
 // Загрузчик фото товара: файлы уходят на /api/admin/upload, обратно — URL.
@@ -11,9 +13,12 @@ import { type ImageItem, newKey } from "./product-form-types";
 export function ImageUploader({
   images,
   onChange,
+  tone = "surface",
 }: {
   images: ImageItem[];
   onChange: (next: ImageItem[]) => void;
+  /** Фон карточек фото: серый на белой секции, белый внутри серого блока цвета. */
+  tone?: "surface" | "card";
 }) {
   const t = useTranslations("Admin.Products");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -26,7 +31,10 @@ export function ImageUploader({
     setBusy(true);
     try {
       const uploaded: ImageItem[] = [];
-      for (const file of Array.from(files)) {
+      for (const original of Array.from(files)) {
+        // Уменьшаем и переводим в WebP до отправки: снимок с телефона на 2–5 МБ
+        // превращается в ~150 КБ. Если сжать не вышло — уйдёт оригинал.
+        const file = await compressImage(original);
         const fd = new FormData();
         fd.set("file", file);
         const res = await fetch("/api/admin/upload", {
@@ -79,14 +87,20 @@ export function ImageUploader({
   return (
     <div className="flex flex-col gap-3">
       <div>
+        {/* Зона загрузки: кнопка + подсказка одним блоком — привычный вид загрузчика. */}
         <button
           type="button"
           onClick={() => inputRef.current?.click()}
           disabled={busy}
-          className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm transition-colors hover:bg-muted disabled:opacity-60"
+          className="flex w-full flex-col items-center gap-1 rounded-xl border border-dashed border-input px-4 py-5 text-center transition-colors hover:border-primary hover:bg-primary-soft/50 disabled:opacity-60"
         >
-          <Upload className="size-4" aria-hidden />
-          {busy ? t("uploading") : t("uploadImage")}
+          <Upload className="size-5 text-muted-foreground" aria-hidden />
+          <span className="text-sm font-medium">
+            {busy ? t("uploading") : t("uploadImage")}
+          </span>
+          <span className="text-xs text-muted-foreground">
+            {t("uploadHint")}
+          </span>
         </button>
         <input
           ref={inputRef}
@@ -96,8 +110,7 @@ export function ImageUploader({
           hidden
           onChange={(e) => handleFiles(e.target.files)}
         />
-        <p className="mt-1 text-xs text-muted-foreground">{t("uploadHint")}</p>
-        {error && <p className="mt-1 text-sm text-destructive">{error}</p>}
+        {error && <p className="mt-2 text-sm text-destructive">{error}</p>}
       </div>
 
       {images.length === 0 ? (
@@ -107,7 +120,11 @@ export function ImageUploader({
           {images.map((im, i) => (
             <li
               key={im.key}
-              className="flex gap-3 rounded-xl border border-border p-3"
+              className={
+                tone === "card"
+                  ? "flex gap-3 rounded-xl border border-border bg-card p-3"
+                  : "flex gap-3 rounded-xl border border-border bg-surface p-3"
+              }
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
@@ -117,11 +134,13 @@ export function ImageUploader({
               />
               <div className="flex min-w-0 flex-1 flex-col gap-2">
                 <Input
+                  className={CONTROL_CLASS}
                   value={im.altRu}
                   placeholder={t("altRu")}
                   onChange={(e) => update(im.key, { altRu: e.target.value })}
                 />
                 <Input
+                  className={CONTROL_CLASS}
                   value={im.altAz}
                   placeholder={t("altAz")}
                   onChange={(e) => update(im.key, { altAz: e.target.value })}

@@ -23,10 +23,20 @@ class CheckoutError extends Error {
   }
 }
 
+// Номер заказа: PREFIX-ДДММГГ-СЛУЧАЙНОЕ, дата в европейском порядке
+// (день-месяц-год) и в часовом поясе магазина, а не в UTC сервера.
 function makeOrderNumber(): string {
-  const ymd = new Date().toISOString().slice(2, 10).replace(/-/g, ""); // yymmdd
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: brand.timeZone,
+    day: "2-digit",
+    month: "2-digit",
+    year: "2-digit",
+  }).formatToParts(new Date());
+  const get = (type: Intl.DateTimeFormatPartTypes) =>
+    parts.find((p) => p.type === type)?.value ?? "";
+  const ddmmyy = `${get("day")}${get("month")}${get("year")}`;
   const rand = crypto.randomUUID().split("-")[0].toUpperCase();
-  return `BS-${ymd}-${rand}`;
+  return `${brand.orderNumberPrefix}-${ddmmyy}-${rand}`;
 }
 
 function required(v: FormDataEntryValue | null): string {

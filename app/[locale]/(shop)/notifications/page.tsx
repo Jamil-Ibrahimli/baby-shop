@@ -4,6 +4,7 @@ import { hasLocale } from "next-intl";
 import { BellOff, ChevronRight, UserCircle } from "lucide-react";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { dateFormat } from "@/lib/format";
 import { routing, type Locale } from "@/i18n/routing";
 import { Link } from "@/i18n/navigation";
 import {
@@ -67,13 +68,12 @@ export default async function NotificationsPage({
   const unreadCount = counts.unread;
   const hasRead = notifications.some((n) => n.isRead);
 
-  const tag = loc === "az" ? "az-AZ" : "ru-RU";
-  const dateTimeFmt = new Intl.DateTimeFormat(tag, {
+  const dateTimeFmt = dateFormat(loc, {
     dateStyle: "medium",
     timeStyle: "short",
   });
-  const dayFmt = new Intl.DateTimeFormat(tag, { day: "numeric", month: "long" });
-  const dayYearFmt = new Intl.DateTimeFormat(tag, {
+  const dayFmt = dateFormat(loc, { day: "numeric", month: "long" });
+  const dayYearFmt = dateFormat(loc, {
     day: "numeric",
     month: "long",
     year: "numeric",

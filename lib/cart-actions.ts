@@ -27,6 +27,14 @@ export async function addToCart(
   const existing = await prisma.cartItem.findUnique({
     where: { cartId_variantId: { cartId: cart.id, variantId } },
   });
+
+  // Весь доступный остаток уже в корзине — не трогаем позицию и говорим об этом.
+  // Раньше здесь молча записывалось то же количество, и покупатель не понимал,
+  // добавилось что-то или нет.
+  if (existing && existing.quantity >= variant.stock) {
+    return { ok: false, reason: "already_max" };
+  }
+
   const desired = (existing?.quantity ?? 0) + qty;
   const finalQty = Math.min(desired, variant.stock);
 
@@ -46,7 +54,13 @@ export async function addToCart(
     });
   }
 
-  return { ok: true, capped: finalQty < desired, quantity: finalQty };
+  return {
+    ok: true,
+    capped: finalQty < desired,
+    quantity: finalQty,
+    stock: variant.stock,
+    remaining: variant.stock - finalQty,
+  };
 }
 
 // Изменение количества позиции (с проверкой владельца и клампом к остатку).

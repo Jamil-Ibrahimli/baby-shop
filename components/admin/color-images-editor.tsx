@@ -38,8 +38,11 @@ export function ColorImagesEditor({
     <div className="flex flex-col gap-5">
       <p className="text-xs text-muted-foreground">{t("colorImagesHint")}</p>
       {colors.map((c) => (
-        <div key={c.key} className="rounded-xl border border-border p-4">
-          <div className="mb-3 flex items-center gap-2">
+        <div
+          key={c.key}
+          className="rounded-xl border border-border bg-surface p-4"
+        >
+          <div className="mb-3 flex items-center gap-2 border-b border-border pb-2">
             <span
               className="size-4 rounded-full border border-black/10"
               style={{ backgroundColor: c.hex || "transparent" }}
@@ -48,6 +51,7 @@ export function ColorImagesEditor({
             <span className="text-sm font-semibold">{c.name}</span>
           </div>
           <ImageUploader
+            tone="card"
             images={value[c.key] ?? []}
             onChange={(imgs) => onChange({ ...value, [c.key]: imgs })}
           />

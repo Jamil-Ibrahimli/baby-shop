@@ -32,7 +32,9 @@ export default async function AdminProductsPage({
         <span>{t("title")}</span>
       </div>
       <div className="mb-5 flex items-center justify-between gap-3">
-        <h1 className="text-2xl font-semibold sm:text-3xl">{t("title")}</h1>
+        <h1 className="font-heading text-2xl font-bold sm:text-3xl">
+          {t("title")}
+        </h1>
         <Link
           href="/admin/products/new"
           className={buttonVariants({ className: "rounded-full" })}
@@ -62,7 +64,7 @@ export default async function AdminProductsPage({
             <li key={p.id}>
               <Link
                 href={`/admin/products/${p.id}`}
-                className="flex gap-3 rounded-2xl border border-border bg-card p-3 transition-colors hover:bg-muted"
+                className="flex h-full gap-3 rounded-2xl border border-border bg-card p-3 shadow-sm transition-colors hover:border-primary/40"
               >
                 {p.imageUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element

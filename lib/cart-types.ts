@@ -30,6 +30,19 @@ export type CartVM = {
 };
 
 // Результат добавления в корзину (возвращается server action-ом).
+// `remaining` — сколько ещё можно добавить сверх того, что уже в корзине:
+// 0 означает, что взяли последнюю доступную единицу. Склад не резервируется,
+// остаток списывается только при оформлении заказа — здесь лишь обратная связь.
 export type AddToCartResult =
-  | { ok: true; capped: boolean; quantity: number }
-  | { ok: false; reason: "out_of_stock" | "not_found" };
+  | {
+      ok: true;
+      capped: boolean; // просили больше, чем осталось — добавили сколько было
+      quantity: number; // итоговое количество этого варианта в корзине
+      stock: number;
+      remaining: number;
+    }
+  | {
+      ok: false;
+      // already_max — весь доступный остаток варианта уже лежит в корзине
+      reason: "out_of_stock" | "not_found" | "already_max";
+    };

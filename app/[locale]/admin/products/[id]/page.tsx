@@ -85,6 +85,7 @@ export default async function EditProductPage({
       colorHex: v.colorHex ?? "",
       price: (v.price / 100).toFixed(2),
       stock: String(v.stock),
+      stockLoaded: String(v.stock),
       isActive: v.isActive,
     })),
     images: generalImages,
@@ -100,7 +101,7 @@ export default async function EditProductPage({
         <span>/</span>
         <span className="truncate">{loc === "az" ? product.nameAz : product.nameRu}</span>
       </div>
-      <h1 className="mb-5 text-2xl font-semibold sm:text-3xl">
+      <h1 className="mb-5 font-heading text-2xl font-bold sm:text-3xl">
         {t("editTitle")}
       </h1>
       <ProductForm locale={loc} categories={categories} initial={initial} />

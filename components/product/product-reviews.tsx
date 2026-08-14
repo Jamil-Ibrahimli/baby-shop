@@ -3,6 +3,7 @@ import { MessageSquareText } from "lucide-react";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { Link } from "@/i18n/navigation";
+import { dateFormat } from "@/lib/format";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { StarRating } from "./star-rating";
@@ -42,10 +43,7 @@ export async function ProductReviews({
     ? reviews.filter((r) => r.id !== myReview.id)
     : reviews;
 
-  const dateFmt = new Intl.DateTimeFormat(
-    locale === "az" ? "az-AZ" : "ru-RU",
-    { dateStyle: "long" },
-  );
+  const dateFmt = dateFormat(locale, { dateStyle: "long" });
 
   return (
     <section aria-labelledby="reviews-heading" className="flex flex-col gap-5">

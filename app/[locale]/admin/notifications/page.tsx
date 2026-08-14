@@ -3,7 +3,7 @@ import { hasLocale } from "next-intl";
 import { BellOff } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { routing, type Locale } from "@/i18n/routing";
-import { formatMoney } from "@/lib/format";
+import { dateFormat, formatMoney } from "@/lib/format";
 import {
   NOTIFICATION_FILTERS,
   parseNotificationFilter,
@@ -61,13 +61,12 @@ export default async function AdminNotificationsPage({
   const unreadCount = counts.unread;
   const hasRead = notifications.some((n) => n.isRead);
 
-  const tag = loc === "az" ? "az-AZ" : "ru-RU";
-  const dateTimeFmt = new Intl.DateTimeFormat(tag, {
+  const dateTimeFmt = dateFormat(loc, {
     dateStyle: "medium",
     timeStyle: "short",
   });
-  const dayFmt = new Intl.DateTimeFormat(tag, { day: "numeric", month: "long" });
-  const dayYearFmt = new Intl.DateTimeFormat(tag, {
+  const dayFmt = dateFormat(loc, { day: "numeric", month: "long" });
+  const dayYearFmt = dateFormat(loc, {
     day: "numeric",
     month: "long",
     year: "numeric",

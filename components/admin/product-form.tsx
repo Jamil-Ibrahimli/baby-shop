@@ -1,13 +1,19 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import type { ComponentType } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
-import { Trash2 } from "lucide-react";
+import { Images, Layers, Leaf, Palette, Shirt, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import {
+  AreaField,
+  CheckField,
+  SelectField,
+  TextField,
+} from "./form-fields";
 import { saveProduct, deleteProduct } from "@/lib/admin/product-actions";
+import { findDuplicateComboIndexes } from "@/lib/variant-dupes";
 import { VariantEditor } from "./variant-editor";
 import { ImageUploader } from "./image-uploader";
 import { ColorImagesEditor } from "./color-images-editor";
@@ -64,6 +70,12 @@ export function ProductForm({
 
   function submit() {
     setError(null);
+    // Два варианта с одной парой «размер + цвет» БД не примет (уникальный индекс),
+    // поэтому останавливаемся до запроса: строки уже подсвечены в редакторе.
+    if (findDuplicateComboIndexes(f.variants).size > 0) {
+      setError(t("Errors.variant_combo_dup"));
+      return;
+    }
     const fd = new FormData();
     fd.set("id", f.id ?? "");
     fd.set("slug", f.slug);
@@ -96,6 +108,7 @@ export function ProductForm({
           colorHex: v.colorHex,
           price: v.price,
           stock: v.stock,
+          stockLoaded: v.stockLoaded,
           isActive: v.isActive,
         })),
       ),
@@ -146,7 +159,7 @@ export function ProductForm({
   return (
     <div className="flex flex-col gap-8">
       {/* Основное */}
-      <Section title={t("sectionBasic")}>
+      <Section title={t("sectionBasic")} icon={Shirt}>
         <div className="grid gap-3 sm:grid-cols-2">
           <TextField label={t("nameRu")} value={f.nameRu} onChange={(v) => set("nameRu", v)} />
           <TextField label={t("nameAz")} value={f.nameAz} onChange={(v) => set("nameAz", v)} />
@@ -157,30 +170,26 @@ export function ProductForm({
           onChange={(v) => set("slug", v)}
           placeholder="organic-bodysuit"
         />
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="p-cat">{t("category")}</Label>
-          <select
-            id="p-cat"
-            value={f.categoryId}
-            onChange={(e) => set("categoryId", e.target.value)}
-            className="h-9 rounded-xl border border-border bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
-          >
-            <option value="">{t("noCategory")}</option>
-            {categories.map((c) => (
-              <option key={c.id} value={c.id}>
-                {"— ".repeat(c.depth)}
-                {locale === "az" ? c.nameAz : c.nameRu}
-              </option>
-            ))}
-          </select>
-        </div>
+        <SelectField
+          label={t("category")}
+          value={f.categoryId}
+          onChange={(v) => set("categoryId", v)}
+        >
+          <option value="">{t("noCategory")}</option>
+          {categories.map((c) => (
+            <option key={c.id} value={c.id}>
+              {"— ".repeat(c.depth)}
+              {locale === "az" ? c.nameAz : c.nameRu}
+            </option>
+          ))}
+        </SelectField>
         <div className="grid gap-3 sm:grid-cols-2">
           <AreaField label={t("descriptionRu")} value={f.descriptionRu} onChange={(v) => set("descriptionRu", v)} />
           <AreaField label={t("descriptionAz")} value={f.descriptionAz} onChange={(v) => set("descriptionAz", v)} />
         </div>
-        <div className="flex flex-wrap gap-4">
-          <Check label={t("isPublished")} checked={f.isPublished} onChange={(v) => set("isPublished", v)} />
-          <Check label={t("isBundle")} checked={f.isBundle} onChange={(v) => set("isBundle", v)} />
+        <div className="grid gap-3 sm:grid-cols-2">
+          <CheckField label={t("isPublished")} checked={f.isPublished} onChange={(v) => set("isPublished", v)} />
+          <CheckField label={t("isBundle")} checked={f.isBundle} onChange={(v) => set("isBundle", v)} />
         </div>
         {f.isBundle && (
           <div className="grid gap-3 sm:grid-cols-2">
@@ -191,7 +200,7 @@ export function ProductForm({
       </Section>
 
       {/* Состав, уход, безопасность */}
-      <Section title={t("sectionCare")}>
+      <Section title={t("sectionCare")} icon={Leaf}>
         <div className="grid gap-3 sm:grid-cols-2">
           <AreaField label={t("compositionRu")} value={f.compositionRu} onChange={(v) => set("compositionRu", v)} />
           <AreaField label={t("compositionAz")} value={f.compositionAz} onChange={(v) => set("compositionAz", v)} />
@@ -202,39 +211,43 @@ export function ProductForm({
           <TextField
             label={t("cottonPercent")}
             type="number"
+            min={0}
             value={f.cottonPercent}
             onChange={(v) => set("cottonPercent", v)}
             placeholder="100"
+            suffix="%"
           />
           <TextField
             label={t("certifications")}
             value={f.certifications}
             onChange={(v) => set("certifications", v)}
             placeholder="OEKO-TEX"
+            hint={t("certificationsHint")}
           />
         </div>
-        <div className="flex flex-wrap gap-4">
-          <Check label={t("isOrganic")} checked={f.isOrganic} onChange={(v) => set("isOrganic", v)} />
-          <Check label={t("isHypoallergenic")} checked={f.isHypoallergenic} onChange={(v) => set("isHypoallergenic", v)} />
+        <div className="grid gap-3 sm:grid-cols-2">
+          <CheckField label={t("isOrganic")} checked={f.isOrganic} onChange={(v) => set("isOrganic", v)} />
+          <CheckField label={t("isHypoallergenic")} checked={f.isHypoallergenic} onChange={(v) => set("isHypoallergenic", v)} />
         </div>
       </Section>
 
       {/* Варианты (размер+цвет+цена+остаток) */}
-      <Section title={t("sectionVariants")}>
+      <Section title={t("sectionVariants")} icon={Layers}>
         <VariantEditor
           locale={locale}
           variants={f.variants}
           onChange={(v) => set("variants", v)}
+          showStockHint={isEditing}
         />
       </Section>
 
       {/* Общие фото (галерея + запасной вариант) */}
-      <Section title={t("sectionImages")}>
+      <Section title={t("sectionImages")} icon={Images}>
         <ImageUploader images={f.images} onChange={(v) => set("images", v)} />
       </Section>
 
       {/* Фото по цветам */}
-      <Section title={t("sectionColorImages")}>
+      <Section title={t("sectionColorImages")} icon={Palette}>
         <ColorImagesEditor
           variants={f.variants}
           value={f.colorImages}
@@ -242,109 +255,50 @@ export function ProductForm({
         />
       </Section>
 
-      {error && <p className="text-sm text-destructive">{error}</p>}
-
-      <div className="flex flex-wrap items-center gap-3">
-        <Button onClick={submit} disabled={isPending} className="rounded-full">
-          {isEditing ? t("save") : t("create")}
-        </Button>
-        {isEditing && (
-          <Button
-            variant="outline"
-            onClick={remove}
-            disabled={isPending}
-            className="rounded-full text-destructive"
-          >
-            <Trash2 className="size-4" aria-hidden />
-            {t("delete")}
+      {/* Панель действий липкая: форма длинная, кнопка «Сохранить» всегда под рукой. */}
+      <div className="sticky bottom-4 z-10 flex flex-col gap-3 rounded-2xl border border-border bg-card/95 p-3 shadow-lg backdrop-blur">
+        {error && <p className="text-sm text-destructive">{error}</p>}
+        <div className="flex flex-wrap items-center gap-3">
+          <Button onClick={submit} disabled={isPending} className="rounded-full">
+            {isEditing ? t("save") : t("create")}
           </Button>
-        )}
+          {isEditing && (
+            <Button
+              variant="outline"
+              onClick={remove}
+              disabled={isPending}
+              className="rounded-full text-destructive"
+            >
+              <Trash2 className="size-4" aria-hidden />
+              {t("delete")}
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   );
 }
 
+// Секция формы — белая карточка на серой подложке админки (как плитки на главной).
+// Раньше секции были прозрачными и на подложке почти не читались.
 function Section({
   title,
+  icon: Icon,
   children,
 }: {
   title: string;
+  icon: ComponentType<{ className?: string; "aria-hidden"?: boolean }>;
   children: React.ReactNode;
 }) {
   return (
-    <section className="flex flex-col gap-3 rounded-2xl border border-border p-5">
-      <h2 className="text-base font-semibold">{title}</h2>
+    <section className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-5">
+      <h2 className="flex items-center gap-2 font-heading text-base font-bold">
+        <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary-soft text-primary">
+          <Icon className="size-4" aria-hidden />
+        </span>
+        {title}
+      </h2>
       {children}
     </section>
-  );
-}
-
-function TextField({
-  label,
-  value,
-  onChange,
-  type = "text",
-  placeholder,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  type?: string;
-  placeholder?: string;
-}) {
-  return (
-    <div className="flex flex-col gap-1.5">
-      <Label>{label}</Label>
-      <Input
-        type={type}
-        value={value}
-        placeholder={placeholder}
-        onChange={(e) => onChange(e.target.value)}
-      />
-    </div>
-  );
-}
-
-function AreaField({
-  label,
-  value,
-  onChange,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-}) {
-  return (
-    <div className="flex flex-col gap-1.5">
-      <Label>{label}</Label>
-      <textarea
-        rows={3}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-xl border border-border bg-background p-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
-      />
-    </div>
-  );
-}
-
-function Check({
-  label,
-  checked,
-  onChange,
-}: {
-  label: string;
-  checked: boolean;
-  onChange: (v: boolean) => void;
-}) {
-  return (
-    <label className="flex items-center gap-2 text-sm">
-      <input
-        type="checkbox"
-        checked={checked}
-        onChange={(e) => onChange(e.target.checked)}
-        className="size-4 accent-primary"
-      />
-      {label}
-    </label>
   );
 }

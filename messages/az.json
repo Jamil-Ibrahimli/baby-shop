@@ -13,7 +13,8 @@
   "Common": {
     "loading": "Yüklənir…",
     "error": "Nə isə səhv oldu",
-    "empty": "Boşdur"
+    "empty": "Boşdur",
+    "close": "Bağla"
   },
   "Catalog": {
     "title": "Kataloq",
@@ -91,11 +92,18 @@
     "lowStock": "Qalıb: {count}",
     "outOfStock": "Stokda yoxdur",
     "addToCart": "Səbətə",
+    "maxInCart": "Səbətdə maksimumdur",
     "quantity": "Say",
-    "added": "Səbətə əlavə edildi",
     "goToCart": "Səbətə keç",
-    "capped": "Stokda yalnız {count} ədəd var.",
     "selectVariantFirst": "Ölçü və rəng seçin",
+    "Toast": {
+      "addedTitle": "Səbətə əlavə edildi",
+      "addedLastText": "Bu, sonuncu ədəddir — stokda daha yoxdur.",
+      "maxInCartTitle": "Stokda daha yoxdur",
+      "maxInCartText": "Mövcud qalığın hamısı artıq səbətinizdədir.",
+      "unavailableTitle": "Əlavə etmək alınmadı",
+      "unavailableText": "Bu məhsul artıq stokda yoxdur."
+    },
     "SizeGuide": {
       "trigger": "Ölçü cədvəli",
       "title": "0–3 ölçü cədvəli",
@@ -245,6 +253,8 @@
       "careAz": "Qulluq (azərb.)",
       "cottonPercent": "Pambıq faizi",
       "certifications": "Sertifikatlar",
+      "certificationsHint": "Vergüllə ayırın",
+      "unitsShort": "əd",
       "isOrganic": "Üzvi pambıq",
       "isHypoallergenic": "Hipoallergen",
       "isPublished": "Dərc olunub",
@@ -258,13 +268,18 @@
       "colorHex": "Rəng (HEX)",
       "price": "Qiymət",
       "stock": "Qalıq",
+      "variantNumber": "Variant {number}",
       "variantActive": "Aktiv",
       "removeVariant": "Variantı sil",
+      "duplicateVariant": "Dublikat et",
       "addVariant": "Variant əlavə et",
       "noVariants": "Hələ variant yoxdur. Ən azı bir ölçü və rəng əlavə edin.",
+      "stockHint": "Qalıq sifarişlərlə özü azalır. «Qalıq» sahəsinə toxunmasanız, məhsulu yadda saxlayanda o üzərinə yazılmayacaq.",
+      "variantComboDuplicate": "Bu ölçü və rəng başqa variantda artıq var — ölçünü və ya rəngi dəyişin.",
+      "variantSkuDuplicate": "Bu artikul başqa variantda artıq var.",
       "uploadImage": "Şəkil yüklə",
       "uploading": "Yüklənir…",
-      "uploadHint": "JPG, PNG, WEBP, 5 MB-a qədər. Bir neçə ola bilər.",
+      "uploadHint": "JPG, PNG, WEBP. Bir neçə ola bilər — böyük şəkillər özü kiçildiləcək.",
       "noImages": "Hələ şəkil yoxdur.",
       "altRu": "Alt-mətn (rus.)",
       "altAz": "Alt-mətn (azərb.)",
@@ -292,6 +307,7 @@
         "variant_sku": "Hər variantın artikulu olmalıdır",
         "variant_sku_dup": "Variant artikulları təkrarlanır",
         "variant_color": "Variantın rəngini hər iki dildə göstərin",
+        "variant_combo_dup": "Eyni ölçü və rəngə malik variantlar var — onlar işarələnib. Ölçünü və ya rəngi dəyişin, ya da artıq variantı silin.",
         "variant_price": "Variantın qiyməti sıfırdan böyük olmalıdır",
         "sku_or_variant_taken": "Artikul və ya ölçü+rəng uyğunluğu artıq mövcuddur"
       }

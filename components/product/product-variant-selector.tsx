@@ -3,9 +3,10 @@
 import { useMemo, useState, useTransition } from "react";
 import type { ReactNode } from "react";
 import { useTranslations } from "next-intl";
-import { Check, Minus, Plus } from "lucide-react";
+import { Minus, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/toast";
 import { formatPrice } from "@/lib/format";
 import { Link, useRouter } from "@/i18n/navigation";
 import { addToCart } from "@/lib/cart-actions";
@@ -17,6 +18,8 @@ type Props = {
   variants: ProductVariantVM[];
   priceFromMinor: number;
   locale: Locale;
+  /** Сколько единиц каждого варианта уже в корзине (обновляется router.refresh()). */
+  inCart: Record<string, number>;
   /** Слот для таблицы размеров (серверный компонент, передаётся со страницы). */
   sizeGuideSlot?: ReactNode;
 };
@@ -25,13 +28,14 @@ export function ProductVariantSelector({
   variants,
   priceFromMinor,
   locale,
+  inCart,
   sizeGuideSlot,
 }: Props) {
   const t = useTranslations("Product");
   const router = useRouter();
+  const toast = useToast();
   const { setColorKey } = useColorSelection();
   const [isPending, startTransition] = useTransition();
-  const [feedback, setFeedback] = useState<{ capped: boolean } | null>(null);
 
   const sizes = useMemo(() => {
     const seen = new Map<string, { code: string; label: string }>();
@@ -73,11 +77,20 @@ export function ProductVariantSelector({
       : variants.some((v) => v.color === c && v.available);
 
   const selected = find(size, color);
-  const canBuy = !!selected && selected.available;
+
+  // Остаток считаем по конкретному варианту (размер+цвет) за вычетом того,
+  // что покупатель уже положил в корзину. Склад не резервируется — это только
+  // подсказка интерфейса, финальная проверка всё равно на сервере.
+  const alreadyInCart = selected ? (inCart[selected.id] ?? 0) : 0;
+  const addable = selected ? Math.max(0, selected.stock - alreadyInCart) : 0;
+  const soldOut = !!selected && !selected.available;
+  const atMax = !!selected && !soldOut && addable === 0;
+  const canBuy = !!selected && !soldOut && !atMax;
+  // Количество ограничиваем «на лету», без синхронизации состояния в эффекте.
+  const effectiveQty = Math.min(qty, Math.max(1, addable));
 
   function selectSize(s: string) {
     setSize(s);
-    setFeedback(null);
     setQty(1);
     if (color && !find(s, color)?.available) {
       setColor(null);
@@ -88,29 +101,64 @@ export function ProductVariantSelector({
   function selectColor(c: string, key: string) {
     setColor(c);
     setColorKey(key); // сообщаем галерее выбранный цвет
-    setFeedback(null);
     setQty(1);
   }
 
   function changeQty(delta: number) {
     if (!selected) return;
-    setQty((q) => Math.min(Math.max(1, q + delta), selected.stock));
+    setQty((q) => Math.min(Math.max(1, q + delta), addable));
   }
+
+  const cartLink = (
+    <Link href="/cart" className="text-sm font-medium underline underline-offset-4">
+      {t("goToCart")}
+    </Link>
+  );
 
   function handleAdd() {
     if (!selected) return;
     startTransition(async () => {
-      const res = await addToCart(selected.id, qty);
-      if (res.ok) {
-        setFeedback({ capped: res.capped });
-        router.refresh(); // обновить счётчик в шапке
+      const res = await addToCart(selected.id, effectiveQty);
+
+      if (!res.ok) {
+        // Молчаливых отказов быть не должно — на каждый случай своё сообщение.
+        toast.add({
+          type: "info",
+          title:
+            res.reason === "already_max"
+              ? t("Toast.maxInCartTitle")
+              : t("Toast.unavailableTitle"),
+          description:
+            res.reason === "already_max"
+              ? t("Toast.maxInCartText")
+              : t("Toast.unavailableText"),
+          data: res.reason === "already_max" ? { action: cartLink } : undefined,
+        });
+        router.refresh(); // подтянуть свежий остаток/корзину
+        return;
       }
+
+      toast.add({
+        title: t("Toast.addedTitle"),
+        // remaining === 0 → взяли последнюю доступную единицу.
+        description: res.remaining === 0 ? t("Toast.addedLastText") : undefined,
+        data: { action: cartLink },
+      });
+      router.refresh(); // счётчик в шапке + состояние кнопки
     });
   }
 
   const priceLabel = selected
     ? formatPrice(selected.priceMinor, locale)
     : t("priceFrom", { price: formatPrice(priceFromMinor, locale) });
+
+  // Подпись кнопки объясняет, почему она неактивна.
+  let buttonLabel = t("selectVariantFirst");
+  if (selected) {
+    if (soldOut) buttonLabel = t("outOfStock");
+    else if (atMax) buttonLabel = t("maxInCart");
+    else buttonLabel = t("addToCart");
+  }
 
   let stockNode: ReactNode = (
     <span className="text-muted-foreground">{t("chooseVariant")}</span>
@@ -214,19 +262,19 @@ export function ProductVariantSelector({
             <button
               type="button"
               onClick={() => changeQty(-1)}
-              disabled={!canBuy || qty <= 1}
+              disabled={!canBuy || effectiveQty <= 1}
               aria-label="-"
               className="flex size-9 items-center justify-center rounded-full disabled:opacity-40"
             >
               <Minus className="size-4" />
             </button>
             <span className="min-w-8 text-center text-sm tabular-nums">
-              {qty}
+              {effectiveQty}
             </span>
             <button
               type="button"
               onClick={() => changeQty(1)}
-              disabled={!canBuy || qty >= (selected?.stock ?? 1)}
+              disabled={!canBuy || effectiveQty >= addable}
               aria-label="+"
               className="flex size-9 items-center justify-center rounded-full disabled:opacity-40"
             >
@@ -240,29 +288,9 @@ export function ProductVariantSelector({
             disabled={!canBuy || isPending}
             onClick={handleAdd}
           >
-            {canBuy ? t("addToCart") : t("selectVariantFirst")}
+            {buttonLabel}
           </Button>
         </div>
-
-        {feedback && (
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
-            <span className="inline-flex items-center gap-1 text-primary">
-              <Check className="size-4" aria-hidden />
-              {t("added")}
-            </span>
-            {feedback.capped && selected && (
-              <span className="text-muted-foreground">
-                {t("capped", { count: selected.stock })}
-              </span>
-            )}
-            <Link
-              href="/cart"
-              className="font-medium underline underline-offset-4"
-            >
-              {t("goToCart")}
-            </Link>
-          </div>
-        )}
       </div>
     </div>
   );

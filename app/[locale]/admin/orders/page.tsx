@@ -8,7 +8,7 @@ import {
   getOrderStatusCounts,
   parseStatusFilter,
 } from "@/lib/admin/orders";
-import { formatMoney } from "@/lib/format";
+import { dateFormat, formatMoney } from "@/lib/format";
 import { OrderStatusBadge } from "@/components/admin/order-status-badge";
 import { OrdersStatusFilter } from "@/components/admin/orders-status-filter";
 import {
@@ -43,7 +43,7 @@ export default async function AdminOrdersPage({
   ]);
   const total = Object.values(counts).reduce((s, n) => s + n, 0);
 
-  const dateFmt = new Intl.DateTimeFormat(loc === "az" ? "az-AZ" : "ru-RU", {
+  const dateFmt = dateFormat(loc, {
     dateStyle: "medium",
     timeStyle: "short",
   });

@@ -1,5 +1,6 @@
-import { setRequestLocale } from "next-intl/server";
+import { setRequestLocale, getTranslations } from "next-intl/server";
 import { SiteHeader } from "@/components/layout/site-header";
+import { ToastProvider } from "@/components/ui/toast";
 
 // Оболочка витрины (всё, кроме админки): общая шапка сайта.
 // Админка живёт в своей оболочке с сайдбаром (app/[locale]/admin/layout.tsx),
@@ -13,11 +14,14 @@ export default async function ShopLayout({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
+  const t = await getTranslations("Common");
 
+  // Провайдер уведомлений — на всю витрину: тосты о корзине показываются
+  // и со страницы товара, и из любого будущего места.
   return (
-    <>
+    <ToastProvider closeLabel={t("close")}>
       <SiteHeader />
       {children}
-    </>
+    </ToastProvider>
   );
 }
