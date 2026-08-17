@@ -1,9 +1,21 @@
 {
   "Home": {
-    "welcome": "Xoş gəlmisiniz",
-    "subtitle": "0–3 yaş körpələr üçün isti və təhlükəsiz geyim.",
-    "catalogCta": "Kataloqa keç",
-    "foundationNote": "Bu, layihənin bünövrəsidir: vitrin, səbət və sifariş sonra əlavə olunacaq."
+    "heroBadge": "0–3 yaş",
+    "heroTitle": "Ən kiçiklər üçün yumşaq geyim",
+    "heroLead": "Zərif parçalar, yoxlanılmış materiallar və aylara görə ölçülər — ilk günlərdən üç yaşa qədər.",
+    "heroCta": "Kataloqa bax",
+    "heroSaleCta": "Endirimli",
+    "categoriesTitle": "Kateqoriyalar",
+    "categoriesLead": "Körpəniz üçün lazım olanı seçin",
+    "newTitle": "Yeniliklər",
+    "newLead": "Mağazaya təzəcə gəldi",
+    "saleTitle": "Endirimli",
+    "saleLead": "Stokda olduğu müddətdə tələsin",
+    "seeAll": "Bütün məhsullar",
+    "contactTitle": "Ölçüdə tərəddüd edirsiniz?",
+    "contactLead": "Bizə yazın — ölçü seçməyə kömək edək və tərkib barədə danışaq.",
+    "contactWhatsapp": "WhatsApp-a yazın",
+    "contactInstagram": "Instagram-da bizik"
   },
   "LocaleSwitcher": {
     "label": "Dil",

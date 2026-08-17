@@ -1,9 +1,14 @@
-import { setRequestLocale, getTranslations } from "next-intl/server";
-import { Link } from "@/i18n/navigation";
-import { buttonVariants } from "@/components/ui/button";
-import { brand } from "@/config/brand";
-import { routing, type Locale } from "@/i18n/routing";
+import { Suspense } from "react";
+import { setRequestLocale } from "next-intl/server";
 import { hasLocale } from "next-intl";
+
+import { routing, type Locale } from "@/i18n/routing";
+import { HomeHero } from "@/components/home/hero";
+import { CategoryTiles } from "@/components/home/category-tiles";
+import { ProductRail } from "@/components/home/product-rail";
+import { ContactCta } from "@/components/home/contact-cta";
+import { TrustBar } from "@/components/catalog/trust-bar";
+import { ProductGridSkeleton } from "@/components/catalog/product-grid-skeleton";
 
 export default async function HomePage({
   params,
@@ -12,36 +17,31 @@ export default async function HomePage({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const t = await getTranslations("Home");
   const loc: Locale = hasLocale(routing.locales, locale)
     ? locale
     : routing.defaultLocale;
 
+  // Первый экран рисуется сразу, блоки с товарами и категориями стримятся:
+  // они ходят в БД, и ждать их ради заголовка незачем.
   return (
-    <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col items-center justify-center gap-8 px-6 py-16 text-center">
-      <div className="flex flex-col items-center gap-4">
-        <span className="text-sm font-medium uppercase tracking-widest text-muted-foreground">
-          {brand.name}
-        </span>
-        <h1 className="text-4xl font-semibold text-balance sm:text-5xl">
-          {t("welcome")}
-        </h1>
-        <p className="max-w-md text-lg text-muted-foreground text-pretty">
-          {brand.tagline[loc]}
-        </p>
-        <p className="max-w-md text-base text-muted-foreground text-pretty">
-          {t("subtitle")}
-        </p>
-      </div>
+    <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-10 px-4 py-6 sm:px-6 sm:py-8 sm:gap-14">
+      <HomeHero locale={loc} />
 
-      <Link
-        href="/catalog"
-        className={buttonVariants({ size: "lg", className: "rounded-full" })}
-      >
-        {t("catalogCta")}
-      </Link>
+      <Suspense fallback={null}>
+        <CategoryTiles locale={loc} />
+      </Suspense>
 
-      <p className="text-sm text-muted-foreground/70">{t("foundationNote")}</p>
+      <Suspense fallback={<ProductGridSkeleton />}>
+        <ProductRail locale={loc} variant="new" />
+      </Suspense>
+
+      <Suspense fallback={null}>
+        <ProductRail locale={loc} variant="sale" />
+      </Suspense>
+
+      <TrustBar />
+
+      <ContactCta />
     </main>
   );
 }
