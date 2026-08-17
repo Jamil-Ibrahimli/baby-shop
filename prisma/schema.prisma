@@ -367,6 +367,36 @@ model OrderItem {
 }
 
 // ─────────────────────────────────────────────────────────────
+// Баннеры главной страницы. Управляются из админки, код не правится.
+// ─────────────────────────────────────────────────────────────
+
+model Banner {
+  id       String @id @default(cuid())
+  imageUrl String
+
+  // Текст поверх картинки — необязательный: если пусто, показываем только фото
+  // (владелец может нарисовать надписи прямо на баннере в редакторе).
+  titleRu    String?
+  titleAz    String?
+  subtitleRu String?
+  subtitleAz String?
+  ctaRu      String? // подпись кнопки
+  ctaAz      String?
+
+  // Внутренний путь без локали: "/catalog", "/catalog?sale=1", "/product/slug".
+  // Внешние адреса не принимаем — защита от увода покупателя на чужой сайт.
+  linkUrl String?
+
+  sortOrder Int     @default(0)
+  isActive  Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isActive, sortOrder])
+}
+
+// ─────────────────────────────────────────────────────────────
 // Уведомления (in-app). Telegram-уведомления шлёт сервис отдельно.
 // ─────────────────────────────────────────────────────────────
 

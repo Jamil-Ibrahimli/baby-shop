@@ -3,6 +3,8 @@ import { setRequestLocale } from "next-intl/server";
 import { hasLocale } from "next-intl";
 
 import { routing, type Locale } from "@/i18n/routing";
+import { getActiveBanners } from "@/lib/banners";
+import { BannerSlider } from "@/components/home/banner-slider";
 import { HomeHero } from "@/components/home/hero";
 import { CategoryTiles } from "@/components/home/category-tiles";
 import { ProductRail } from "@/components/home/product-rail";
@@ -21,11 +23,17 @@ export default async function HomePage({
     ? locale
     : routing.defaultLocale;
 
-  // Первый экран рисуется сразу, блоки с товарами и категориями стримятся:
-  // они ходят в БД, и ждать их ради заголовка незачем.
+  // Первый экран: баннеры из админки, если они есть. Пока их не загрузили —
+  // показываем обычный hero, чтобы главная никогда не выглядела пустой.
+  const banners = await getActiveBanners(loc);
+
   return (
     <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-10 px-4 py-6 sm:px-6 sm:py-8 sm:gap-14">
-      <HomeHero locale={loc} />
+      {banners.length > 0 ? (
+        <BannerSlider banners={banners} />
+      ) : (
+        <HomeHero locale={loc} />
+      )}
 
       <Suspense fallback={null}>
         <CategoryTiles locale={loc} />

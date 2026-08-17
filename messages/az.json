@@ -15,7 +15,11 @@
     "contactTitle": "Ölçüdə tərəddüd edirsiniz?",
     "contactLead": "Bizə yazın — ölçü seçməyə kömək edək və tərkib barədə danışaq.",
     "contactWhatsapp": "WhatsApp-a yazın",
-    "contactInstagram": "Instagram-da bizik"
+    "contactInstagram": "Instagram-da bizik",
+    "bannersLabel": "Mağaza bannerləri",
+    "bannerPrev": "Əvvəlki banner",
+    "bannerNext": "Növbəti banner",
+    "bannerGoTo": "Banner {number}"
   },
   "LocaleSwitcher": {
     "label": "Dil",
@@ -201,7 +205,8 @@
       "content": "Kontent",
       "analytics": "Analitika",
       "notifications": "Bildirişlər",
-      "settings": "Tənzimləmələr"
+      "settings": "Tənzimləmələr",
+      "banners": "Bannerlər"
     },
     "Orders": {
       "title": "Sifarişlər",
@@ -356,6 +361,40 @@
         "slug_required": "Slaq daxil edin (latın hərfləri ilə)",
         "slug_taken": "Bu slaq artıq tutulub",
         "cycle": "Kateqoriya öz-özünə daxil edilə bilməz"
+      }
+    },
+    "Banners": {
+      "title": "Bannerlər",
+      "lead": "Ana səhifənin ən yuxarısındaki şəkillər. Sıranı oxlarla təyin edirsiniz.",
+      "backToAdmin": "Admin panel",
+      "empty": "Hələ banner yoxdur. İlkini əlavə edin — o, ana səhifədə salamlama blokunun yerinə çıxacaq.",
+      "add": "Banner əlavə et",
+      "bannerNumber": "Banner {number}",
+      "hidden": "gizlidir",
+      "uploadImage": "Şəkil yüklə",
+      "replaceImage": "Şəkli dəyiş",
+      "imageHint": "Geniş şəkil yaxşıdır, təxminən 1600×700. Böyük fayllar özü kiçildiləcək.",
+      "titleRu": "Başlıq (rus.)",
+      "titleAz": "Başlıq (azərb.)",
+      "subtitleRu": "Alt başlıq (rus.)",
+      "subtitleAz": "Alt başlıq (azərb.)",
+      "ctaRu": "Düymə (rus.)",
+      "ctaAz": "Düymə (azərb.)",
+      "linkUrl": "Hara aparır",
+      "linkHint": "Sayt daxilindəki yol: /catalog, /catalog?sale=1, /product/slaq. Boşdursa — banner klikləmir.",
+      "isActive": "Saytda göstər",
+      "moveUp": "Yuxarı",
+      "moveDown": "Aşağı",
+      "save": "Yadda saxla",
+      "create": "Əlavə et",
+      "cancel": "Ləğv et",
+      "delete": "Sil",
+      "confirmDelete": "Bu banner silinsin? Bu geri qaytarıla bilməz.",
+      "Errors": {
+        "forbidden": "Kifayət qədər hüquq yoxdur",
+        "image_required": "Banner şəklini yükləyin",
+        "bad_link": "Keçid sayt daxilindəki yol olmalı və «/» ilə başlamalıdır",
+        "not_found": "Banner tapılmadı"
       }
     }
   },
