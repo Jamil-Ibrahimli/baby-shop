@@ -1,10 +1,10 @@
 import { getTranslations } from "next-intl/server";
-// Иконок брендов в lucide 1.x больше нет (их убрали из набора) — для Instagram
-// берём нейтральную «камеру», для WhatsApp — облачко сообщения.
-import { Camera, MessageCircle } from "lucide-react";
-
 import { buttonVariants } from "@/components/ui/button";
 import { BearMascot } from "@/components/brand/bear-mascot";
+import {
+  InstagramIcon,
+  WhatsAppIcon,
+} from "@/components/brand/social-icons";
 import { brand } from "@/config/brand";
 
 // Блок «спросите нас»: связь идёт по телефону и в мессенджерах (онлайн-оплаты нет),
@@ -31,7 +31,7 @@ export async function ContactCta() {
           rel="noreferrer"
           className={buttonVariants({ className: "rounded-full" })}
         >
-          <MessageCircle className="size-4" aria-hidden />
+          <WhatsAppIcon />
           {t("contactWhatsapp")}
         </a>
         <a
@@ -43,7 +43,7 @@ export async function ContactCta() {
             className: "rounded-full bg-card",
           })}
         >
-          <Camera className="size-4" aria-hidden />
+          <InstagramIcon />
           {t("contactInstagram")}
         </a>
       </div>
