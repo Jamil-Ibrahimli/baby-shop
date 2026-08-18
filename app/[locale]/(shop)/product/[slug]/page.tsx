@@ -84,11 +84,17 @@ async function ProductContent({
 
   return (
     <>
+      {/* Раскладка на широком экране: слева фото, под ним отзывы (там пустует
+          место, потому что правая колонка выше); справа — покупка на все две
+          строки. На телефоне колонка одна, и порядок в разметке даёт нужную
+          последовательность: фото → покупка → отзывы. */}
       <ColorSelectionProvider>
-        <div className="grid gap-8 lg:grid-cols-2">
-          <ProductGallery images={product.images} />
+        <div className="grid gap-8 lg:grid-cols-2 lg:items-start">
+          <div className="lg:col-start-1 lg:row-start-1">
+            <ProductGallery images={product.images} />
+          </div>
 
-          <div className="flex flex-col gap-6">
+          <div className="flex flex-col gap-6 lg:col-start-2 lg:row-span-2 lg:row-start-1">
             <div>
               {product.categoryName && (
                 <p className="text-sm text-muted-foreground">
@@ -113,18 +119,18 @@ async function ProductContent({
 
             <ProductDetails product={product} />
           </div>
+
+          <div className="lg:col-start-1 lg:row-start-2">
+            <ProductReviews
+              productId={product.id}
+              reviews={product.reviews}
+              ratingAvg={product.ratingAvg}
+              ratingCount={product.ratingCount}
+              locale={locale}
+            />
+          </div>
         </div>
       </ColorSelectionProvider>
-
-      <div className="mt-12">
-        <ProductReviews
-          productId={product.id}
-          reviews={product.reviews}
-          ratingAvg={product.ratingAvg}
-          ratingCount={product.ratingCount}
-          locale={locale}
-        />
-      </div>
     </>
   );
 }

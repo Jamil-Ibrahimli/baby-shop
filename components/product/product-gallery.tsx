@@ -52,18 +52,38 @@ function GalleryView({
   const [active, setActive] = useState(startIndex);
   const main = images[Math.min(active, images.length - 1)];
 
-  // sm:items-start обязателен. Галерея — ячейка сетки lg:grid-cols-2 и
-  // растягивается по высоте соседней колонки (цена, размеры, кнопка). Элементы
-  // flex-строки по умолчанию тоже тянутся, поэтому рамка фото получала высоту
-  // от соседа, а aspect-* при заданной высоте игнорируется — фото выходило
-  // «длинным», и любые правки пропорции на широком экране ничего не меняли.
+  // self-start обязателен: галерея — ячейка сетки lg:grid-cols-2 и по умолчанию
+  // растягивалась по высоте соседней колонки (цена, размеры, кнопка). Тогда
+  // высота рамки приходила извне, а aspect-* при заданной высоте игнорируется —
+  // фото выходило «длинным», и правки пропорции ничего не меняли.
+  // Высоту строки теперь задаёт само фото, поэтому столбик миниатюр можно
+  // просто растянуть по ней (обычный stretch) — без подгонки числом.
   return (
-    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
+    <div className="relative flex flex-col gap-3 self-start sm:block">
+      {/* Рамка 10:11 — чуть выше квадрата. Размер задан пропорцией, поэтому фото
+          на него не влияет: любой снимок садится в одну и ту же рамку.
+          object-cover + object-center: заполняет до скруглённых углов, а обрезка
+          делится поровну между верхом и низом.
+          На десктопе отступ слева — место под столбик миниатюр. */}
+      <div className="relative aspect-10/11 w-full overflow-hidden rounded-2xl border border-border bg-card sm:ml-22 sm:w-auto">
+        <Image
+          src={main.url}
+          alt={main.alt}
+          fill
+          sizes="(min-width: 1024px) 40vw, 100vw"
+          className="object-cover object-center"
+          priority
+        />
+      </div>
+
       {/* Миниатюры: на телефоне лентой под фото, на десктопе столбиком слева.
-          Не выше самого фото, иначе лента торчала бы под рамкой.
+          Столбик позиционирован абсолютно (inset-y-0), поэтому его высота РАВНА
+          высоте фото при любом числе снимков — лишние прокручиваются. Если бы он
+          стоял в потоке, десять миниатюр растянули бы строку и фото снова
+          вытянулось бы по ним.
           Полосу прокрутки скрываем — прокрутка колесом и свайпом остаётся. */}
       {images.length > 1 && (
-        <div className="order-2 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] sm:order-1 sm:max-h-132 sm:w-18 sm:shrink-0 sm:flex-col sm:overflow-x-visible sm:overflow-y-auto sm:pb-0 [&::-webkit-scrollbar]:hidden">
+        <div className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] sm:absolute sm:inset-y-0 sm:left-0 sm:w-18 sm:flex-col sm:overflow-x-visible sm:overflow-y-auto sm:pb-0 [&::-webkit-scrollbar]:hidden">
           {images.map((img, i) => (
             <button
               key={img.url}
@@ -89,21 +109,6 @@ function GalleryView({
           ))}
         </div>
       )}
-
-      {/* Рамка 10:11 — чуть выше квадрата. Размер задан пропорцией, поэтому фото
-          на него не влияет: любой снимок садится в одну и ту же рамку.
-          object-cover + object-center: заполняет до скруглённых углов, а обрезка
-          делится поровну между верхом и низом. */}
-      <div className="relative order-1 aspect-10/11 w-full overflow-hidden rounded-2xl border border-border bg-card sm:order-2 sm:flex-1">
-        <Image
-          src={main.url}
-          alt={main.alt}
-          fill
-          sizes="(min-width: 1024px) 40vw, 100vw"
-          className="object-cover object-center"
-          priority
-        />
-      </div>
     </div>
   );
 }
