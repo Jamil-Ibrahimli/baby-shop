@@ -19,7 +19,7 @@ export function ProductGallery({ images }: { images: ProductImageVM[] }) {
 
   if (images.length === 0) {
     return (
-      <div className="flex aspect-square w-full items-center justify-center rounded-2xl bg-muted">
+      <div className="flex aspect-10/11 w-full items-center justify-center rounded-2xl bg-muted">
         <ImageIcon className="size-10 text-muted-foreground" aria-hidden />
       </div>
     );
@@ -59,10 +59,11 @@ function GalleryView({
   // «длинным», и любые правки пропорции на широком экране ничего не меняли.
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
-      {/* Миниатюры: на телефоне лентой под фото, на десктопе столбиком слева. */}
-      {/* Столбик не выше самого фото — иначе лента торчала бы под рамкой. */}
+      {/* Миниатюры: на телефоне лентой под фото, на десктопе столбиком слева.
+          Не выше самого фото, иначе лента торчала бы под рамкой.
+          Полосу прокрутки скрываем — прокрутка колесом и свайпом остаётся. */}
       {images.length > 1 && (
-        <div className="order-2 flex gap-2 overflow-x-auto pb-1 sm:order-1 sm:max-h-120 sm:w-18 sm:shrink-0 sm:flex-col sm:overflow-x-visible sm:overflow-y-auto sm:pb-0">
+        <div className="order-2 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] sm:order-1 sm:max-h-132 sm:w-18 sm:shrink-0 sm:flex-col sm:overflow-x-visible sm:overflow-y-auto sm:pb-0 [&::-webkit-scrollbar]:hidden">
           {images.map((img, i) => (
             <button
               key={img.url}
@@ -82,24 +83,24 @@ function GalleryView({
                 alt=""
                 fill
                 sizes="72px"
-                className="object-cover object-top"
+                className="object-cover object-center"
               />
             </button>
           ))}
         </div>
       )}
 
-      {/* Квадратная рамка. Размер задан пропорцией, поэтому фото на него не
-          влияет — любой снимок садится в одну и ту же рамку.
-          object-cover + object-top: заполняет до скруглённых углов, обрезается
-          низ, а не верх. */}
-      <div className="relative order-1 aspect-square w-full overflow-hidden rounded-2xl border border-border bg-card sm:order-2 sm:flex-1">
+      {/* Рамка 10:11 — чуть выше квадрата. Размер задан пропорцией, поэтому фото
+          на него не влияет: любой снимок садится в одну и ту же рамку.
+          object-cover + object-center: заполняет до скруглённых углов, а обрезка
+          делится поровну между верхом и низом. */}
+      <div className="relative order-1 aspect-10/11 w-full overflow-hidden rounded-2xl border border-border bg-card sm:order-2 sm:flex-1">
         <Image
           src={main.url}
           alt={main.alt}
           fill
           sizes="(min-width: 1024px) 40vw, 100vw"
-          className="object-cover object-top"
+          className="object-cover object-center"
           priority
         />
       </div>
