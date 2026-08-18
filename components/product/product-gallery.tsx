@@ -52,8 +52,13 @@ function GalleryView({
   const [active, setActive] = useState(startIndex);
   const main = images[Math.min(active, images.length - 1)];
 
+  // sm:items-start обязателен. Галерея — ячейка сетки lg:grid-cols-2 и
+  // растягивается по высоте соседней колонки (цена, размеры, кнопка). Элементы
+  // flex-строки по умолчанию тоже тянутся, поэтому рамка фото получала высоту
+  // от соседа, а aspect-* при заданной высоте игнорируется — фото выходило
+  // «длинным», и любые правки пропорции на широком экране ничего не меняли.
   return (
-    <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
       {/* Миниатюры: на телефоне лентой под фото, на десктопе столбиком слева. */}
       {/* Столбик не выше самого фото — иначе лента торчала бы под рамкой. */}
       {images.length > 1 && (
