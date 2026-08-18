@@ -19,7 +19,7 @@ export function ProductGallery({ images }: { images: ProductImageVM[] }) {
 
   if (images.length === 0) {
     return (
-      <div className="flex aspect-4/5 w-full items-center justify-center rounded-2xl bg-muted">
+      <div className="flex aspect-square w-full items-center justify-center rounded-2xl bg-muted">
         <ImageIcon className="size-10 text-muted-foreground" aria-hidden />
       </div>
     );
@@ -83,13 +83,15 @@ function GalleryView({
         </div>
       )}
 
-      <div className="relative order-1 aspect-4/5 w-full overflow-hidden rounded-2xl bg-muted sm:order-2 sm:flex-1">
+      {/* Квадрат вместо вытянутого 4:5 — фото стало заметно ниже.
+          object-contain: снимок вписывается целиком, ничего не обрезается. */}
+      <div className="relative order-1 aspect-square w-full overflow-hidden rounded-2xl border border-border bg-card sm:order-2 sm:flex-1">
         <Image
           src={main.url}
           alt={main.alt}
           fill
           sizes="(min-width: 1024px) 40vw, 100vw"
-          className="object-cover"
+          className="object-contain"
           priority
         />
       </div>
