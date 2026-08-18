@@ -19,7 +19,7 @@ export function ProductGallery({ images }: { images: ProductImageVM[] }) {
 
   if (images.length === 0) {
     return (
-      <div className="flex aspect-square w-full items-center justify-center rounded-2xl bg-muted">
+      <div className="flex aspect-2/1 w-full items-center justify-center rounded-2xl bg-muted">
         <ImageIcon className="size-10 text-muted-foreground" aria-hidden />
       </div>
     );
@@ -55,8 +55,9 @@ function GalleryView({
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
       {/* Миниатюры: на телефоне лентой под фото, на десктопе столбиком слева. */}
+      {/* Столбик не выше самого фото — иначе лента торчала бы под рамкой. */}
       {images.length > 1 && (
-        <div className="order-2 flex gap-2 overflow-x-auto pb-1 sm:order-1 sm:max-h-125 sm:w-18 sm:shrink-0 sm:flex-col sm:overflow-x-visible sm:overflow-y-auto sm:pb-0">
+        <div className="order-2 flex gap-2 overflow-x-auto pb-1 sm:order-1 sm:max-h-64 sm:w-18 sm:shrink-0 sm:flex-col sm:overflow-x-visible sm:overflow-y-auto sm:pb-0">
           {images.map((img, i) => (
             <button
               key={img.url}
@@ -83,10 +84,12 @@ function GalleryView({
         </div>
       )}
 
-      {/* Квадрат. object-cover, чтобы все фото были одного размера и заполняли
-          рамку до скруглённых углов: при object-contain широкие снимки висели
-          полосами по центру. object-top — кадр прижат к верху, там главное. */}
-      <div className="relative order-1 aspect-square w-full overflow-hidden rounded-2xl border border-border bg-card sm:order-2 sm:flex-1">
+      {/* Рамка 2:1 — ровно вдвое ниже квадрата: фото больше не растягивает
+          страницу вниз. Размер задан пропорцией, поэтому картинка на него не
+          влияет — любое фото садится в одну и ту же рамку.
+          object-cover + object-top: заполняет до скруглённых углов, обрезается
+          низ, а не верх. */}
+      <div className="relative order-1 aspect-2/1 w-full overflow-hidden rounded-2xl border border-border bg-card sm:order-2 sm:flex-1">
         <Image
           src={main.url}
           alt={main.alt}
