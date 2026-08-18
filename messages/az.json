@@ -169,7 +169,9 @@
         "unauthorized": "Rəy yazmaq üçün daxil olun",
         "not_found": "Məhsul tapılmadı"
       }
-    }
+    },
+    "photoPrev": "Əvvəlki şəkil",
+    "photoNext": "Növbəti şəkil"
   },
   "Header": {
     "catalog": "Kataloq",

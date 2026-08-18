@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import { ImageIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { ChevronLeft, ChevronRight, ImageIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { ProductImageVM } from "@/lib/product-types";
 import { useColorSelection } from "./color-selection";
@@ -49,8 +50,37 @@ function GalleryView({
   images: ProductImageVM[];
   startIndex: number;
 }) {
+  const t = useTranslations("Product");
   const [active, setActive] = useState(startIndex);
+  const stripRef = useRef<HTMLDivElement>(null);
   const main = images[Math.min(active, images.length - 1)];
+
+  // Стрелки листают по кругу: с последнего фото — на первое.
+  const step = (delta: number) =>
+    setActive((i) => (i + delta + images.length) % images.length);
+
+  // Подкручиваем ленту к активной миниатюре. Считаем через getBoundingClientRect
+  // и двигаем сам контейнер: scrollIntoView в некоторых браузерах уводит и всю
+  // страницу. Состояние тут не меняется — правило про setState в эффекте не нарушено.
+  useEffect(() => {
+    const strip = stripRef.current;
+    const thumb = strip?.children[active] as HTMLElement | undefined;
+    if (!strip || !thumb) return;
+
+    const stripBox = strip.getBoundingClientRect();
+    const thumbBox = thumb.getBoundingClientRect();
+    strip.scrollTo({
+      top:
+        strip.scrollTop +
+        (thumbBox.top - stripBox.top) -
+        (stripBox.height - thumbBox.height) / 2,
+      left:
+        strip.scrollLeft +
+        (thumbBox.left - stripBox.left) -
+        (stripBox.width - thumbBox.width) / 2,
+      behavior: "smooth",
+    });
+  }, [active]);
 
   // self-start обязателен: галерея — ячейка сетки lg:grid-cols-2 и по умолчанию
   // растягивалась по высоте соседней колонки (цена, размеры, кнопка). Тогда
@@ -74,6 +104,29 @@ function GalleryView({
           className="object-cover object-center"
           priority
         />
+
+        {/* Стрелки прямо на фото. Полупрозрачная подложка, чтобы читались
+            и на светлом, и на тёмном снимке. */}
+        {images.length > 1 && (
+          <>
+            <button
+              type="button"
+              onClick={() => step(-1)}
+              aria-label={t("photoPrev")}
+              className="absolute top-1/2 left-2 flex size-9 -translate-y-1/2 items-center justify-center rounded-full bg-card/85 text-foreground shadow-md transition-colors hover:bg-card"
+            >
+              <ChevronLeft className="size-5" aria-hidden />
+            </button>
+            <button
+              type="button"
+              onClick={() => step(1)}
+              aria-label={t("photoNext")}
+              className="absolute top-1/2 right-2 flex size-9 -translate-y-1/2 items-center justify-center rounded-full bg-card/85 text-foreground shadow-md transition-colors hover:bg-card"
+            >
+              <ChevronRight className="size-5" aria-hidden />
+            </button>
+          </>
+        )}
       </div>
 
       {/* Миниатюры: на телефоне лентой под фото, на десктопе столбиком слева.
@@ -83,7 +136,10 @@ function GalleryView({
           вытянулось бы по ним.
           Полосу прокрутки скрываем — прокрутка колесом и свайпом остаётся. */}
       {images.length > 1 && (
-        <div className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] sm:absolute sm:inset-y-0 sm:left-0 sm:w-18 sm:flex-col sm:overflow-x-visible sm:overflow-y-auto sm:pb-0 [&::-webkit-scrollbar]:hidden">
+        <div
+          ref={stripRef}
+          className="flex scroll-smooth gap-2 overflow-x-auto pb-1 [scrollbar-width:none] sm:absolute sm:inset-y-0 sm:left-0 sm:w-18 sm:flex-col sm:overflow-x-visible sm:overflow-y-auto sm:pb-0 [&::-webkit-scrollbar]:hidden"
+        >
           {images.map((img, i) => (
             <button
               key={img.url}
