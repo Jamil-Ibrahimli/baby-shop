@@ -8,6 +8,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { StarRating } from "./star-rating";
 import { ReviewForm } from "./review-form";
+import { ReviewCard } from "./review-card";
 import type { ReviewVM } from "@/lib/product-types";
 import type { Locale } from "@/i18n/routing";
 
@@ -29,19 +30,18 @@ export async function ProductReviews({
   const t = await getTranslations("Product.Reviews");
   const session = await auth();
 
-  const myReview = session?.user
-    ? await prisma.review.findUnique({
-        where: {
-          productId_userId: { productId, userId: session.user.id },
-        },
-        select: { id: true, rating: true, body: true },
-      })
-    : null;
-
-  // Свой отзыв убираем из общего списка (он редактируется в форме).
-  const listReviews = myReview
-    ? reviews.filter((r) => r.id !== myReview.id)
-    : reviews;
+  // Свои отзывы больше НЕ убираем из списка: покупатель видит опубликованное
+  // сразу после отправки. Отмечаем их, чтобы показать «Изменить» и «Удалить».
+  const myIds = session?.user
+    ? new Set(
+        (
+          await prisma.review.findMany({
+            where: { productId, userId: session.user.id },
+            select: { id: true },
+          })
+        ).map((r) => r.id),
+      )
+    : new Set<string>();
 
   const dateFmt = dateFormat(locale, { dateStyle: "long" });
 
@@ -63,12 +63,7 @@ export async function ProductReviews({
 
       {/* Форма для авторизованных / приглашение войти для гостя */}
       {session?.user ? (
-        <ReviewForm
-          productId={productId}
-          initial={
-            myReview ? { rating: myReview.rating, body: myReview.body } : null
-          }
-        />
+        <ReviewForm productId={productId} />
       ) : (
         <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-dashed border-border p-4 text-sm">
           <span className="text-muted-foreground">{t("signInToReview")}</span>
@@ -103,30 +98,16 @@ export async function ProductReviews({
           <p className="mt-1 text-sm text-muted-foreground">{t("emptyHint")}</p>
         </div>
       ) : (
-        listReviews.length > 0 && (
-          <ul className="flex flex-col gap-4">
-            {listReviews.map((r) => (
-              <li key={r.id} className="rounded-2xl border border-border p-4">
-                <div className="flex items-center justify-between gap-2">
-                  <span className="font-medium">
-                    {r.author ?? t("anonymous")}
-                  </span>
-                  <StarRating value={r.rating} />
-                </div>
-                {r.verified && (
-                  <span className="mt-1 inline-block text-xs text-primary">
-                    {t("verified")}
-                  </span>
-                )}
-                {r.title && <p className="mt-2 font-medium">{r.title}</p>}
-                <p className="mt-1 text-sm text-muted-foreground">{r.body}</p>
-                <time className="mt-2 block text-xs text-muted-foreground/70">
-                  {dateFmt.format(new Date(r.createdAt))}
-                </time>
-              </li>
-            ))}
-          </ul>
-        )
+        <ul className="flex flex-col gap-4">
+          {reviews.map((r) => (
+            <ReviewCard
+              key={r.id}
+              review={r}
+              mine={myIds.has(r.id)}
+              dateLabel={dateFmt.format(new Date(r.createdAt))}
+            />
+          ))}
+        </ul>
       )}
     </section>
   );

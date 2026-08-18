@@ -6,7 +6,18 @@ import { prisma } from "@/lib/prisma";
 // Коды ошибок переводятся на клиенте (Product.Reviews.Errors.*).
 export type ReviewResult = { error?: string };
 
-// Создать/обновить отзыв. Только зарегистрированный пользователь, один отзыв на товар.
+function validate(rating: number, body: string): ReviewResult | null {
+  const stars = Math.round(rating);
+  if (stars < 1 || stars > 5) return { error: "rating_required" };
+  if (body.trim().length < 3) return { error: "body_required" };
+  return null;
+}
+
+/**
+ * Добавить отзыв. Только зарегистрированный пользователь.
+ * Отзывов на товар может быть сколько угодно — каждый раз создаётся новый,
+ * прежние не перезаписываются (раньше здесь был upsert по (productId, userId)).
+ */
 export async function submitReview(
   productId: string,
   rating: number,
@@ -15,11 +26,8 @@ export async function submitReview(
   const session = await auth();
   if (!session?.user) return { error: "unauthorized" };
 
-  const stars = Math.round(rating);
-  if (stars < 1 || stars > 5) return { error: "rating_required" };
-
-  const text = body.trim();
-  if (text.length < 3) return { error: "body_required" };
+  const invalid = validate(rating, body);
+  if (invalid) return invalid;
 
   const product = await prisma.product.findUnique({
     where: { id: productId },
@@ -27,23 +35,45 @@ export async function submitReview(
   });
   if (!product) return { error: "not_found" };
 
-  // Уникальность (productId, userId) гарантирует «один отзыв на товар».
-  await prisma.review.upsert({
-    where: {
-      productId_userId: { productId, userId: session.user.id },
+  await prisma.review.create({
+    data: {
+      productId,
+      userId: session.user.id,
+      rating: Math.round(rating),
+      body: body.trim(),
     },
-    update: { rating: stars, body: text },
-    create: { productId, userId: session.user.id, rating: stars, body: text },
   });
 
   return {};
 }
 
-// Удалить свой отзыв (владелец определяется по сессии — чужой удалить нельзя).
-export async function deleteReview(productId: string): Promise<void> {
+/** Изменить СВОЙ отзыв. Чужой не тронется: userId в условии обновления. */
+export async function updateReview(
+  reviewId: string,
+  rating: number,
+  body: string,
+): Promise<ReviewResult> {
+  const session = await auth();
+  if (!session?.user) return { error: "unauthorized" };
+
+  const invalid = validate(rating, body);
+  if (invalid) return invalid;
+
+  // updateMany с userId в where — правка чужого отзыва просто не найдёт строку.
+  const res = await prisma.review.updateMany({
+    where: { id: reviewId, userId: session.user.id },
+    data: { rating: Math.round(rating), body: body.trim() },
+  });
+  if (res.count === 0) return { error: "not_found" };
+
+  return {};
+}
+
+/** Удалить СВОЙ отзыв по id (владелец проверяется по сессии). */
+export async function deleteReview(reviewId: string): Promise<void> {
   const session = await auth();
   if (!session?.user) return;
   await prisma.review.deleteMany({
-    where: { productId, userId: session.user.id },
+    where: { id: reviewId, userId: session.user.id },
   });
 }

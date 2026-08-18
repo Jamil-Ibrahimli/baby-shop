@@ -6,30 +6,40 @@ import { Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
-import { submitReview, deleteReview } from "@/lib/review-actions";
+import { submitReview, updateReview } from "@/lib/review-actions";
 
-type Initial = { rating: number; body: string } | null;
-
-// Форма отзыва: оценка звёздами (1–5) + текст. Создание/редактирование/удаление.
+/**
+ * Форма отзыва: оценка звёздами (1–5) + текст.
+ * Два режима: добавление нового отзыва (передан productId) и правка своего
+ * (передан reviewId). После добавления поля очищаются — можно писать следующий
+ * отзыв, ограничения «один на товар» больше нет.
+ */
 export function ReviewForm({
   productId,
-  initial,
+  reviewId,
+  initialRating = 0,
+  initialBody = "",
+  onDone,
 }: {
-  productId: string;
-  initial: Initial;
+  productId?: string;
+  reviewId?: string;
+  initialRating?: number;
+  initialBody?: string;
+  /** Вызывается после успешной правки — закрыть форму в карточке отзыва. */
+  onDone?: () => void;
 }) {
   const t = useTranslations("Product.Reviews");
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
-  const [rating, setRating] = useState(initial?.rating ?? 0);
+  const [rating, setRating] = useState(initialRating);
   const [hover, setHover] = useState(0);
-  const [body, setBody] = useState(initial?.body ?? "");
+  const [body, setBody] = useState(initialBody);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
 
   const display = hover || rating;
-  const isEditing = initial !== null;
+  const isEditing = !!reviewId;
 
   function submit() {
     setError(null);
@@ -42,33 +52,38 @@ export function ReviewForm({
       setError("body_required");
       return;
     }
+
     startTransition(async () => {
-      const res = await submitReview(productId, rating, body.trim());
+      const res = isEditing
+        ? await updateReview(reviewId!, rating, body.trim())
+        : await submitReview(productId!, rating, body.trim());
+
       if (res.error) {
         setError(res.error);
-      } else {
-        setSaved(true);
-        router.refresh();
+        return;
       }
-    });
-  }
 
-  function remove() {
-    startTransition(async () => {
-      await deleteReview(productId);
-      setRating(0);
-      setBody("");
-      setSaved(false);
-      setError(null);
+      if (isEditing) {
+        onDone?.();
+      } else {
+        // Освобождаем форму под следующий отзыв: сам отзыв уже уехал в список.
+        setRating(0);
+        setBody("");
+        setSaved(true);
+      }
       router.refresh();
     });
   }
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-4">
-      <p className="mb-2 text-sm font-medium">
-        {isEditing ? t("editTitle") : t("formTitle")}
-      </p>
+    <div
+      className={cn(
+        isEditing ? "mt-3" : "rounded-2xl border border-border bg-card p-4",
+      )}
+    >
+      {!isEditing && (
+        <p className="mb-2 text-sm font-medium">{t("formTitle")}</p>
+      )}
 
       <div
         className="flex gap-0.5"
@@ -110,24 +125,20 @@ export function ReviewForm({
       {error && (
         <p className="mt-1 text-sm text-destructive">{t(`Errors.${error}`)}</p>
       )}
-      {saved && <p className="mt-1 text-sm text-primary">{t("saved")}</p>}
+      {saved && <p className="mt-1 text-sm text-primary">{t("published")}</p>}
 
       <div className="mt-3 flex gap-2">
-        <Button
-          onClick={submit}
-          disabled={isPending}
-          className="rounded-full"
-        >
+        <Button onClick={submit} disabled={isPending} className="rounded-full">
           {isEditing ? t("update") : t("submit")}
         </Button>
         {isEditing && (
           <Button
-            onClick={remove}
+            onClick={onDone}
             disabled={isPending}
             variant="outline"
             className="rounded-full"
           >
-            {t("delete")}
+            {t("cancel")}
           </Button>
         )}
       </div>

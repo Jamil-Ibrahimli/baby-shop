@@ -153,13 +153,11 @@
       "verified": "Təsdiqlənmiş alış",
       "anonymous": "Alıcı",
       "formTitle": "Rəy yazın",
-      "editTitle": "Sizin rəyiniz",
       "ratingLabel": "Qiymətiniz",
       "placeholder": "Məhsul barədə təəssüratınızı yazın…",
       "submit": "Göndər",
       "update": "Yadda saxla",
       "delete": "Sil",
-      "saved": "Rəy yadda saxlanıldı",
       "signInToReview": "Rəy yazmaq üçün daxil olun və ya qeydiyyatdan keçin.",
       "signIn": "Daxil ol",
       "register": "Qeydiyyat",
@@ -168,7 +166,12 @@
         "body_required": "Ən azı bir neçə söz yazın",
         "unauthorized": "Rəy yazmaq üçün daxil olun",
         "not_found": "Məhsul tapılmadı"
-      }
+      },
+      "published": "Rəy dərc olundu — aşağıdaki siyahıda göründü",
+      "yourReview": "sizin rəyiniz",
+      "edit": "Dəyiş",
+      "cancel": "Ləğv et",
+      "confirmDelete": "Bu rəy silinsin? Bu geri qaytarıla bilməz."
     },
     "photoPrev": "Əvvəlki şəkil",
     "photoNext": "Növbəti şəkil"

@@ -222,8 +222,11 @@ model Review {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([productId, userId])
+  // Уникальности (productId, userId) больше нет: покупатель может оставить
+  // сколько угодно отзывов на товар. Правило «1 отзыв» убрано осознанно —
+  // после отправки форма очищается, а отзыв уходит в список.
   @@index([productId])
+  @@index([productId, userId])
 }
 
 // ─────────────────────────────────────────────────────────────
