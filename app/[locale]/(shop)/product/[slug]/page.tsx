@@ -84,17 +84,31 @@ async function ProductContent({
 
   return (
     <>
-      {/* Раскладка на широком экране: слева фото, под ним отзывы (там пустует
-          место, потому что правая колонка выше); справа — покупка на все две
-          строки. На телефоне колонка одна, и порядок в разметке даёт нужную
-          последовательность: фото → покупка → отзывы. */}
+      {/* Широкий экран: две независимые области прокрутки — слева фото и отзывы,
+          справа покупка. Колесо над одной половиной другую не двигает
+          (overscroll-contain), полосы прокрутки скрыты.
+          Телефон: колонка одна, поэтому левая обёртка становится «прозрачной»
+          (display:contents) — её дети встают в общую сетку, и порядок задаётся
+          order-*: фото → покупка → отзывы. */}
       <ColorSelectionProvider>
         <div className="grid gap-8 lg:grid-cols-2 lg:items-start">
-          <div className="lg:col-start-1 lg:row-start-1">
-            <ProductGallery images={product.images} />
+          <div className="contents lg:block lg:h-[calc(100dvh-8rem)] lg:overflow-y-auto lg:overscroll-contain lg:pr-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <div className="order-1">
+              <ProductGallery images={product.images} />
+            </div>
+
+            <div className="order-3 lg:mt-8">
+              <ProductReviews
+                productId={product.id}
+                reviews={product.reviews}
+                ratingAvg={product.ratingAvg}
+                ratingCount={product.ratingCount}
+                locale={locale}
+              />
+            </div>
           </div>
 
-          <div className="flex flex-col gap-6 lg:col-start-2 lg:row-span-2 lg:row-start-1">
+          <div className="order-2 flex flex-col gap-6 lg:h-[calc(100dvh-8rem)] lg:overflow-y-auto lg:overscroll-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             <div>
               {product.categoryName && (
                 <p className="text-sm text-muted-foreground">
@@ -118,16 +132,6 @@ async function ProductContent({
             <BundleContents items={product.bundleItems} />
 
             <ProductDetails product={product} />
-          </div>
-
-          <div className="lg:col-start-1 lg:row-start-2">
-            <ProductReviews
-              productId={product.id}
-              reviews={product.reviews}
-              ratingAvg={product.ratingAvg}
-              ratingCount={product.ratingCount}
-              locale={locale}
-            />
           </div>
         </div>
       </ColorSelectionProvider>
