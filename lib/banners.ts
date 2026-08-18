@@ -1,6 +1,6 @@
 import "server-only";
 import { prisma } from "@/lib/prisma";
-import type { BannerVM } from "@/lib/banner-types";
+import { toBannerTextPosition, type BannerVM } from "@/lib/banner-types";
 import type { Locale } from "@/i18n/routing";
 
 // Баннеры для главной: только активные, в порядке, заданном админом.
@@ -18,6 +18,7 @@ export async function getActiveBanners(locale: Locale): Promise<BannerVM[]> {
       ctaRu: true,
       ctaAz: true,
       linkUrl: true,
+      textPosition: true,
     },
   });
 
@@ -29,5 +30,6 @@ export async function getActiveBanners(locale: Locale): Promise<BannerVM[]> {
     subtitle: (az ? b.subtitleAz : b.subtitleRu) || null,
     cta: (az ? b.ctaAz : b.ctaRu) || null,
     href: b.linkUrl || null,
+    textPosition: toBannerTextPosition(b.textPosition),
   }));
 }

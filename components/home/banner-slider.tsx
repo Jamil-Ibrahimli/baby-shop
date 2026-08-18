@@ -143,7 +143,17 @@ function BannerSlide({
             className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/20 to-transparent"
             aria-hidden
           />
-          <div className="absolute inset-x-0 bottom-0 flex flex-col items-start gap-2 p-5 pb-10 text-left sm:max-w-lg sm:p-8 sm:pb-12">
+          {/* Положение надписей выбирает админ под конкретную картинку. */}
+          <div
+            className={cn(
+              "absolute inset-x-0 bottom-0 flex flex-col gap-2 p-5 pb-10 sm:max-w-lg sm:p-8 sm:pb-12",
+              banner.textPosition === "right" &&
+                "items-end text-right sm:ml-auto",
+              banner.textPosition === "center" &&
+                "items-center text-center sm:mx-auto",
+              banner.textPosition === "left" && "items-start text-left",
+            )}
+          >
             {banner.title && (
               <h2 className="font-heading text-xl font-extrabold text-white text-balance drop-shadow-sm sm:text-3xl">
                 {banner.title}

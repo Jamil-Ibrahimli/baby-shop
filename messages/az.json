@@ -397,7 +397,14 @@
         "not_found": "Banner tapılmadı",
         "cta_without_link": "Düymənin adı var, keçid yoxdur — düymə heç yerə aparmır. «Hara aparır» sahəsini doldurun və ya adı silin."
       },
-      "ctaHint": "Yalnız «Hara aparır» doldurulanda görünür"
+      "ctaHint": "Yalnız «Hara aparır» doldurulanda görünür",
+      "textPosition": "Mətn şəklin harasında",
+      "textPositionHint": "Şəkildə sakit yer olan tərəfi seçin",
+      "textPositions": {
+        "left": "Solda",
+        "center": "Mərkəzdə",
+        "right": "Sağda"
+      }
     }
   },
   "Notifications": {

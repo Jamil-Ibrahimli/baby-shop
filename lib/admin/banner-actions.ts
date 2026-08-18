@@ -3,7 +3,10 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { getAdminUser } from "@/lib/admin/guard";
-import { sanitizeBannerLink } from "@/lib/banner-types";
+import {
+  sanitizeBannerLink,
+  toBannerTextPosition,
+} from "@/lib/banner-types";
 
 export type BannerActionState = { error?: string; ok?: boolean };
 
@@ -48,9 +51,10 @@ export async function saveBanner(
     titleAz: str(formData.get("titleAz")) || null,
     subtitleRu: str(formData.get("subtitleRu")) || null,
     subtitleAz: str(formData.get("subtitleAz")) || null,
-    ctaRu: str(formData.get("ctaRu")) || null,
-    ctaAz: str(formData.get("ctaAz")) || null,
+    ctaRu: ctaRu || null,
+    ctaAz: ctaAz || null,
     linkUrl,
+    textPosition: toBannerTextPosition(str(formData.get("textPosition"))),
     isActive: bool(formData.get("isActive")),
   };
 

@@ -387,6 +387,11 @@ model Banner {
   // Внешние адреса не принимаем — защита от увода покупателя на чужой сайт.
   linkUrl String?
 
+  // Где показывать надписи поверх картинки: "left" | "right" | "center".
+  // Нужно, чтобы текст не ложился на ребёнка или товар — админ выбирает
+  // спокойную зону кадра. Значения — в lib/banner-types.ts (enum'ов в проекте нет).
+  textPosition String @default("left")
+
   sortOrder Int     @default(0)
   isActive  Boolean @default(true)
 

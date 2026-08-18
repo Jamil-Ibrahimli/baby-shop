@@ -12,7 +12,11 @@ import {
   moveBanner,
 } from "@/lib/admin/banner-actions";
 import { useRouter } from "@/i18n/navigation";
-import { CheckField, TextField } from "./form-fields";
+import {
+  BANNER_TEXT_POSITIONS,
+  DEFAULT_BANNER_TEXT_POSITION,
+} from "@/lib/banner-types";
+import { CheckField, SelectField, TextField } from "./form-fields";
 import type { AdminBanner } from "@/lib/admin/banners";
 
 // Черновик баннера в форме. Пустой id — ещё не сохранённый (новый) баннер.
@@ -26,6 +30,7 @@ type Draft = {
   ctaRu: string;
   ctaAz: string;
   linkUrl: string;
+  textPosition: string;
   isActive: boolean;
 };
 
@@ -40,6 +45,7 @@ function toDraft(b: AdminBanner): Draft {
     ctaRu: b.ctaRu ?? "",
     ctaAz: b.ctaAz ?? "",
     linkUrl: b.linkUrl ?? "",
+    textPosition: b.textPosition,
     isActive: b.isActive,
   };
 }
@@ -54,6 +60,7 @@ const EMPTY: Draft = {
   ctaRu: "",
   ctaAz: "",
   linkUrl: "",
+  textPosition: DEFAULT_BANNER_TEXT_POSITION,
   isActive: true,
 };
 
@@ -155,6 +162,7 @@ function BannerCard({
     fd.set("ctaRu", f.ctaRu);
     fd.set("ctaAz", f.ctaAz);
     fd.set("linkUrl", f.linkUrl);
+    fd.set("textPosition", f.textPosition);
     fd.set("isActive", String(f.isActive));
 
     startSave(async () => {
@@ -258,14 +266,30 @@ function BannerCard({
         />
       </div>
 
-      <TextField
-        label={t("linkUrl")}
-        value={f.linkUrl}
-        onChange={(v) => set("linkUrl", v)}
-        placeholder="/catalog?sale=1"
-        hint={t("linkHint")}
-        mono
-      />
+      <div className="grid gap-3 sm:grid-cols-2">
+        <TextField
+          label={t("linkUrl")}
+          value={f.linkUrl}
+          onChange={(v) => set("linkUrl", v)}
+          placeholder="/catalog?sale=1"
+          hint={t("linkHint")}
+          mono
+        />
+        {/* Куда положить надписи: выбирают под картинку, чтобы текст не лёг
+            на ребёнка или товар. */}
+        <SelectField
+          label={t("textPosition")}
+          value={f.textPosition}
+          onChange={(v) => set("textPosition", v)}
+          hint={t("textPositionHint")}
+        >
+          {BANNER_TEXT_POSITIONS.map((pos) => (
+            <option key={pos} value={pos}>
+              {t(`textPositions.${pos}`)}
+            </option>
+          ))}
+        </SelectField>
+      </div>
 
       <CheckField
         label={t("isActive")}
