@@ -76,22 +76,23 @@ function GalleryView({
                 alt=""
                 fill
                 sizes="72px"
-                className="object-cover"
+                className="object-cover object-top"
               />
             </button>
           ))}
         </div>
       )}
 
-      {/* Квадрат вместо вытянутого 4:5 — фото стало заметно ниже.
-          object-contain: снимок вписывается целиком, ничего не обрезается. */}
+      {/* Квадрат. object-cover, чтобы все фото были одного размера и заполняли
+          рамку до скруглённых углов: при object-contain широкие снимки висели
+          полосами по центру. object-top — кадр прижат к верху, там главное. */}
       <div className="relative order-1 aspect-square w-full overflow-hidden rounded-2xl border border-border bg-card sm:order-2 sm:flex-1">
         <Image
           src={main.url}
           alt={main.alt}
           fill
           sizes="(min-width: 1024px) 40vw, 100vw"
-          className="object-contain"
+          className="object-cover object-top"
           priority
         />
       </div>
