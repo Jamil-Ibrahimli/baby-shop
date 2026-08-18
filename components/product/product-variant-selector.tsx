@@ -2,6 +2,7 @@
 
 import { useMemo, useState, useTransition } from "react";
 import type { ReactNode } from "react";
+import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { Minus, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -20,6 +21,8 @@ type Props = {
   locale: Locale;
   /** Сколько единиц каждого варианта уже в корзине (обновляется router.refresh()). */
   inCart: Record<string, number>;
+  /** Ключ цвета → первое фото этого цвета (для миниатюр в выборе цвета). */
+  colorThumbs: Record<string, string>;
   /** Слот для таблицы размеров (серверный компонент, передаётся со страницы). */
   sizeGuideSlot?: ReactNode;
 };
@@ -29,6 +32,7 @@ export function ProductVariantSelector({
   priceFromMinor,
   locale,
   inCart,
+  colorThumbs,
   sizeGuideSlot,
 }: Props) {
   const t = useTranslations("Product");
@@ -241,13 +245,22 @@ export function ProductVariantSelector({
         </div>
       </div>
 
-      {/* Цвет */}
+      {/* Цвет — плитками с фото товара в этом цвете: видно, что выбираешь,
+          не переключая галерею. Если у цвета фото нет, показываем оттенок. */}
       <div>
-        <div className="mb-2 text-sm font-medium">{t("selectColor")}</div>
+        <div className="mb-2 text-sm font-medium">
+          {t("selectColor")}
+          {color && (
+            <span className="ml-1 font-normal text-muted-foreground">
+              {color}
+            </span>
+          )}
+        </div>
         <div className="flex flex-wrap gap-2">
           {colors.map((c) => {
             const enabled = colorEnabled(c.color);
             const isActive = color === c.color;
+            const thumb = colorThumbs[c.colorKey];
             return (
               <button
                 key={c.color}
@@ -256,20 +269,39 @@ export function ProductVariantSelector({
                 aria-pressed={isActive}
                 onClick={() => selectColor(c.color, c.colorKey)}
                 className={cn(
-                  "flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm transition-colors",
+                  "flex w-20 flex-col items-center gap-1 rounded-xl border bg-card p-1.5 text-xs transition-colors",
                   isActive
                     ? "border-primary ring-2 ring-primary/40"
                     : "border-border hover:border-foreground",
-                  !enabled &&
-                    "cursor-not-allowed text-muted-foreground/50 line-through",
+                  !enabled && "cursor-not-allowed opacity-50",
                 )}
               >
+                <span className="relative flex aspect-square w-full items-center justify-center overflow-hidden rounded-lg bg-muted">
+                  {thumb ? (
+                    <Image
+                      src={thumb}
+                      alt=""
+                      width={72}
+                      height={72}
+                      className="size-full object-cover"
+                    />
+                  ) : (
+                    <span
+                      className="size-7 rounded-full border border-black/10"
+                      style={{ backgroundColor: c.hex ?? "transparent" }}
+                      aria-hidden
+                    />
+                  )}
+                </span>
                 <span
-                  className="size-4 rounded-full border border-black/10"
-                  style={{ backgroundColor: c.hex ?? "transparent" }}
-                  aria-hidden
-                />
-                {c.color}
+                  className={cn(
+                    "w-full truncate text-center",
+                    !enabled && "line-through",
+                  )}
+                  title={c.color}
+                >
+                  {c.color}
+                </span>
               </button>
             );
           })}

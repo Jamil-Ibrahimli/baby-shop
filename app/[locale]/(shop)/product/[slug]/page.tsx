@@ -105,6 +105,7 @@ async function ProductContent({
               priceFromMinor={product.priceFromMinor}
               locale={locale}
               inCart={inCart}
+              colorThumbs={product.colorThumbs}
               sizeGuideSlot={<SizeGuideDialog locale={locale} />}
             />
 

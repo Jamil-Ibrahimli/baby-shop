@@ -88,6 +88,14 @@ export const getProductBySlug = cache(async function getProductBySlug(
       return bySize !== 0 ? bySize : a.color.localeCompare(b.color);
     });
 
+  // Первое фото каждого цвета — для миниатюр в выборе цвета.
+  // Порядок фото уже задан админом (sortOrder), поэтому берём первое встреченное.
+  const colorThumbs: Record<string, string> = {};
+  for (const img of p.images) {
+    const key = img.variantId ? variantColorKey.get(img.variantId) : undefined;
+    if (key && !colorThumbs[key]) colorThumbs[key] = img.url;
+  }
+
   const prices = variants.map((v) => v.priceMinor);
   const ratings = p.reviews.map((r) => r.rating);
   const ratingCount = ratings.length;
@@ -119,6 +127,7 @@ export const getProductBySlug = cache(async function getProductBySlug(
       // Фото цвета: ключ берём у связанного варианта; иначе общее фото (null).
       colorKey: img.variantId ? variantColorKey.get(img.variantId) ?? null : null,
     })),
+    colorThumbs,
     variants,
     priceFromMinor: prices.length ? Math.min(...prices) : 0,
     reviews: p.reviews.map((r) => ({

@@ -46,6 +46,12 @@ export type ProductDetailVM = {
   certifications: string[];
   categoryName: string | null;
   images: ProductImageVM[];
+  /**
+   * Первое фото каждого цвета: ключ цвета → URL. Нужно селектору, чтобы
+   * показывать товар в этом цвете миниатюрой, а не только оттенком-кружком.
+   * Цвета без своих фото в карту не попадают — там останется кружок.
+   */
+  colorThumbs: Record<string, string>;
   variants: ProductVariantVM[];
   priceFromMinor: number;
   reviews: ReviewVM[];
