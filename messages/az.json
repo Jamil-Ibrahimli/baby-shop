@@ -394,8 +394,10 @@
         "forbidden": "Kifayət qədər hüquq yoxdur",
         "image_required": "Banner şəklini yükləyin",
         "bad_link": "Keçid sayt daxilindəki yol olmalı və «/» ilə başlamalıdır",
-        "not_found": "Banner tapılmadı"
-      }
+        "not_found": "Banner tapılmadı",
+        "cta_without_link": "Düymənin adı var, keçid yoxdur — düymə heç yerə aparmır. «Hara aparır» sahəsini doldurun və ya adı silin."
+      },
+      "ctaHint": "Yalnız «Hara aparır» doldurulanda görünür"
     }
   },
   "Notifications": {

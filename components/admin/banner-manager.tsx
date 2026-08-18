@@ -248,11 +248,13 @@ function BannerCard({
           label={t("ctaRu")}
           value={f.ctaRu}
           onChange={(v) => set("ctaRu", v)}
+          hint={t("ctaHint")}
         />
         <TextField
           label={t("ctaAz")}
           value={f.ctaAz}
           onChange={(v) => set("ctaAz", v)}
+          hint={t("ctaHint")}
         />
       </div>
 

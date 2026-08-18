@@ -35,6 +35,13 @@ export async function saveBanner(
   // Ссылку ввели, но она не внутренняя — молча сохранять «никуда» нельзя.
   if (rawLink && linkUrl === null) return { error: "bad_link" };
 
+  // Кнопка без ссылки нажимать нечего, поэтому на витрине она не рисуется.
+  // Раньше это происходило молча: админ вписывал подпись и не понимал,
+  // почему кнопки нет. Теперь говорим прямо.
+  const ctaRu = str(formData.get("ctaRu"));
+  const ctaAz = str(formData.get("ctaAz"));
+  if ((ctaRu || ctaAz) && !linkUrl) return { error: "cta_without_link" };
+
   const data = {
     imageUrl,
     titleRu: str(formData.get("titleRu")) || null,
