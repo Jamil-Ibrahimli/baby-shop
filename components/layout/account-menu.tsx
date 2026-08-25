@@ -44,13 +44,13 @@ export function AccountMenu({
           <UserCircle className="size-4" aria-hidden />
           {t("Auth.Account.title")}
         </DropdownMenuItem>
-        {/* Уведомления — отдельный раздел, не часть кабинета */}
-        {!isAdmin && (
-          <DropdownMenuItem render={<Link href="/notifications" />}>
-            <Bell className="size-4" aria-hidden />
-            {t("Notifications.title")}
-          </DropdownMenuItem>
-        )}
+        {/* Уведомления — отдельный раздел, не часть кабинета. Показываем всем,
+            включая админа: это его покупательская лента. Лента магазина — внутри
+            админки, отдельным пунктом сайдбара. */}
+        <DropdownMenuItem render={<Link href="/notifications" />}>
+          <Bell className="size-4" aria-hidden />
+          {t("Notifications.title")}
+        </DropdownMenuItem>
         {isAdmin && (
           <DropdownMenuItem render={<Link href="/admin" />}>
             <LayoutDashboard className="size-4" aria-hidden />

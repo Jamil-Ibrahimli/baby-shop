@@ -3,25 +3,25 @@ import { Bell, ShoppingBag, LayoutGrid } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { Logo } from "@/components/brand/logo";
 import { getCartCount } from "@/lib/cart";
-import { getAdminUnreadCount, getCustomerUnreadCount } from "@/lib/notifications";
+import { getCustomerUnreadCount } from "@/lib/notifications";
 import { auth } from "@/auth";
 import { LocaleSwitcher } from "@/components/locale-switcher";
 import { AccountMenu } from "@/components/layout/account-menu";
 
-// Шапка сайта: бренд, каталог, язык, аккаунт, «колокольчик» (админ), корзина со счётчиком.
+// Шапка сайта: бренд, каталог, язык, аккаунт, «колокольчик» покупателя, корзина.
 export async function SiteHeader() {
   const t = await getTranslations("Header");
   const count = await getCartCount();
   const session = await auth();
+  // Роль нужна меню профиля: у админа там появляется вход в админку.
   const isAdmin = session?.user?.role === "admin";
-  // «Колокольчик»: у админа и у клиента свои ленты — отдельными страницами.
-  // Кабинет (иконка профиля) — про профиль/заказы/адреса, уведомления там не живут.
-  const unread = isAdmin
-    ? await getAdminUnreadCount()
-    : session?.user
-      ? await getCustomerUnreadCount(session.user.id)
-      : 0;
-  const bellHref = isAdmin ? "/admin/notifications" : "/notifications";
+  // «Колокольчик» в шапке магазина — ВСЕГДА про покупателя, даже если вошёл
+  // админ: шапка это витрина, и уводить с неё в админ-панель неожиданно.
+  // Лента магазина живёт в самой админке (сайдбар → «Уведомления»),
+  // там же и её собственный счётчик непрочитанных.
+  const unread = session?.user
+    ? await getCustomerUnreadCount(session.user.id)
+    : 0;
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur">
@@ -43,7 +43,7 @@ export async function SiteHeader() {
           <LocaleSwitcher />
           {session?.user && (
             <Link
-              href={bellHref}
+              href="/notifications"
               aria-label={t("notifications")}
               className="relative inline-flex size-9 items-center justify-center rounded-full transition-colors hover:bg-muted"
             >
