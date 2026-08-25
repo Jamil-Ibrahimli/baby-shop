@@ -138,6 +138,8 @@ export const getProductBySlug = cache(async function getProductBySlug(
       body: r.body,
       createdAt: r.createdAt.toISOString(),
       verified: r.isVerifiedPurchase,
+      reply: r.replyBody,
+      replyAt: r.replyAt ? r.replyAt.toISOString() : null,
     })),
     ratingAvg,
     ratingCount,

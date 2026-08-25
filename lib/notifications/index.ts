@@ -100,6 +100,33 @@ export async function notifyCustomerOrderStatus(params: {
   });
 }
 
+// In-app уведомление КЛИЕНТУ: магазин ответил на его отзыв. Заказа за этим
+// уведомлением нет, поэтому карточка в ленте будет без ссылки — название товара
+// подставляем прямо в заголовок, чтобы понятно было, о чём речь.
+export async function notifyCustomerReviewReply(params: {
+  userId: string;
+  productNameRu: string;
+  productNameAz: string;
+}): Promise<void> {
+  const { userId, productNameRu, productNameAz } = params;
+
+  const [tRu, tAz] = await Promise.all([
+    getTranslations({ locale: "ru", namespace: "Notifications" }),
+    getTranslations({ locale: "az", namespace: "Notifications" }),
+  ]);
+
+  await prisma.notification.create({
+    data: {
+      type: "review_reply",
+      recipientRole: "customer",
+      userId,
+      titleRu: tRu("reviewReplied", { product: productNameRu }),
+      titleAz: tAz("reviewReplied", { product: productNameAz }),
+      isRead: false,
+    },
+  });
+}
+
 // Число непрочитанных уведомлений конкретного клиента (счётчик «колокольчика»).
 export async function getCustomerUnreadCount(userId: string): Promise<number> {
   return prisma.notification.count({

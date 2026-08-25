@@ -8,6 +8,7 @@ import {
   Boxes,
   Percent,
   Images,
+  MessageSquareText,
   FileText,
   BarChart3,
   Bell,
@@ -38,6 +39,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/admin/categories", labelKey: "categories", icon: Boxes },
   { href: "/admin/discounts", labelKey: "discounts", icon: Percent, soon: true },
   { href: "/admin/banners", labelKey: "banners", icon: Images },
+  { href: "/admin/reviews", labelKey: "reviews", icon: MessageSquareText },
   { href: "/admin/content", labelKey: "content", icon: FileText, soon: true },
   {
     href: "/admin/analytics",

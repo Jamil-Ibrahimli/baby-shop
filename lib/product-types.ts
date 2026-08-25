@@ -29,6 +29,9 @@ export type ReviewVM = {
   body: string;
   createdAt: string; // ISO
   verified: boolean;
+  /** Ответ магазина на отзыв (null — ответа нет). */
+  reply: string | null;
+  replyAt: string | null; // ISO
 };
 
 export type ProductDetailVM = {

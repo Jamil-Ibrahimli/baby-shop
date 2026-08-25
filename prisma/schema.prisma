@@ -219,6 +219,11 @@ model Review {
   body               String
   isVerifiedPurchase Boolean @default(false) // опция на будущее
 
+  // Ответ магазина на отзыв: отвечает только владелец, один ответ на отзыв.
+  // Пусто — ответа нет. Дату показываем под ответом на витрине.
+  replyBody String?
+  replyAt   DateTime?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

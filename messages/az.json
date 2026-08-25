@@ -171,7 +171,8 @@
       "yourReview": "sizin rəyiniz",
       "edit": "Dəyiş",
       "cancel": "Ləğv et",
-      "confirmDelete": "Bu rəy silinsin? Bu geri qaytarıla bilməz."
+      "confirmDelete": "Bu rəy silinsin? Bu geri qaytarıla bilməz.",
+      "shopReply": "{shop} mağazasının cavabı"
     },
     "photoPrev": "Əvvəlki şəkil",
     "photoNext": "Növbəti şəkil"
@@ -211,7 +212,8 @@
       "analytics": "Analitika",
       "notifications": "Bildirişlər",
       "settings": "Tənzimləmələr",
-      "banners": "Bannerlər"
+      "banners": "Bannerlər",
+      "reviews": "Rəylər"
     },
     "Orders": {
       "title": "Sifarişlər",
@@ -410,6 +412,26 @@
         "center": "Mərkəzdə",
         "right": "Sağda"
       }
+    },
+    "Reviews": {
+      "title": "Rəylər",
+      "backToAdmin": "Admin panel",
+      "empty": "Hələ rəy yoxdur. Alıcılar yazmağa başlayanda görünəcək.",
+      "anonymous": "Alıcı",
+      "unanswered": "cavabsız",
+      "unansweredCount": "{count, plural, one {# cavabsız} other {# cavabsız}}",
+      "replyLabel": "Mağazanın cavabı",
+      "replyPlaceholder": "Rəyiniz üçün təşəkkür! …",
+      "replyHint": "Cavabı məhsul səhifəsində bütün alıcılar görəcək. Sahə boş olsa, cavab silinir.",
+      "sendReply": "Cavab ver",
+      "saveReply": "Cavabı yadda saxla",
+      "editReply": "Cavabı dəyiş",
+      "deleteReview": "Rəyi sil",
+      "confirmDelete": "Alıcının bu rəyi silinsin? Bu geri qaytarıla bilməz.",
+      "Errors": {
+        "forbidden": "Kifayət qədər hüquq yoxdur",
+        "not_found": "Rəy tapılmadı"
+      }
     }
   },
   "Notifications": {
@@ -433,7 +455,8 @@
       "unread": "Yeni",
       "orders": "Sifarişlər",
       "system": "Sistem"
-    }
+    },
+    "reviewReplied": "Mağaza rəyinizə cavab verdi: {product}"
   },
   "Checkout": {
     "title": "Sifarişin rəsmiləşdirilməsi",

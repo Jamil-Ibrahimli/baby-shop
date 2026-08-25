@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { Link } from "@/i18n/navigation";
 import { dateFormat } from "@/lib/format";
+import { brand } from "@/config/brand";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { StarRating } from "./star-rating";
@@ -105,6 +106,10 @@ export async function ProductReviews({
               review={r}
               mine={myIds.has(r.id)}
               dateLabel={dateFmt.format(new Date(r.createdAt))}
+              replyDateLabel={
+                r.replyAt ? dateFmt.format(new Date(r.replyAt)) : null
+              }
+              shopName={brand.name}
             />
           ))}
         </ul>

@@ -20,10 +20,15 @@ export function ReviewCard({
   review,
   mine,
   dateLabel,
+  replyDateLabel,
+  shopName,
 }: {
   review: ReviewVM;
   mine: boolean;
   dateLabel: string;
+  /** Дата ответа магазина, отформатирована на сервере (пояс магазина). */
+  replyDateLabel: string | null;
+  shopName: string;
 }) {
   const t = useTranslations("Product.Reviews");
   const router = useRouter();
@@ -94,6 +99,22 @@ export function ReviewCard({
             )}
           </div>
         </>
+      )}
+
+      {/* Ответ магазина — вложенным блоком под отзывом, с отступом слева,
+          чтобы читалось как реплика в переписке. */}
+      {review.reply && !editing && (
+        <div className="mt-3 rounded-xl border border-primary/30 bg-primary-soft p-3 sm:ml-6">
+          <p className="text-xs font-semibold text-primary">
+            {t("shopReply", { shop: shopName })}
+          </p>
+          <p className="mt-1 text-sm">{review.reply}</p>
+          {replyDateLabel && (
+            <time className="mt-1 block text-xs text-muted-foreground/70">
+              {replyDateLabel}
+            </time>
+          )}
+        </div>
       )}
     </li>
   );

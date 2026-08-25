@@ -17,8 +17,9 @@ import { NotificationItem } from "@/components/admin/notification-item";
 import { NotificationsActions } from "@/components/admin/notifications-actions";
 import { NotificationsFilter } from "@/components/admin/notifications-filter";
 
-// У клиента системных уведомлений нет (все привязаны к заказу) — табы «Заказы»
-// и «Системные» были бы бессмысленными, поэтому оставляем «Все» и «Новые».
+// Табы оставляем только «Все» и «Новые»: делить уведомления покупателя на
+// «Заказы» и «Системные» смысла мало — их и так немного (статусы заказа плюс
+// ответы магазина на отзывы, у последних заказа нет и карточка идёт без ссылки).
 const CUSTOMER_FILTERS: readonly NotificationFilter[] = ["all", "unread"];
 
 // Уведомления покупателя — ОТДЕЛЬНАЯ страница (кабинет остаётся только про
