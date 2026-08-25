@@ -61,6 +61,9 @@ function ReviewRowCard({ review }: { review: ReviewRow }) {
   const t = useTranslations("Admin.Reviews");
   const router = useRouter();
   const [reply, setReply] = useState(review.replyBody ?? "");
+  // Сохранённый ответ держим локально: после отправки карточка сворачивается
+  // мгновенно, а router.refresh() догоняет остальное (счётчик в сайдбаре).
+  const [savedReply, setSavedReply] = useState(review.replyBody);
   const [open, setOpen] = useState(!review.replyBody);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -73,6 +76,11 @@ function ReviewRowCard({ review }: { review: ReviewRow }) {
         setError(t(`Errors.${res.error}`));
         return;
       }
+      // Свернуть форму: ответ сохранён, дальше карточка показывает его текст
+      // и кнопку «Изменить ответ». Без этого оставалась открытая форма с
+      // «Сохранить», и было непонятно, ушёл ответ или нет.
+      setSavedReply(reply.trim() || null);
+      setOpen(false);
       router.refresh();
     });
   }
@@ -120,7 +128,7 @@ function ReviewRowCard({ review }: { review: ReviewRow }) {
         </div>
         <div className="flex items-center gap-3">
           <StarRating value={review.rating} />
-          {!review.replyBody && (
+          {!savedReply && (
             <span className="rounded-full bg-secondary-light px-2 py-0.5 text-xs font-medium text-secondary-foreground">
               {t("unanswered")}
             </span>
@@ -170,10 +178,10 @@ function ReviewRowCard({ review }: { review: ReviewRow }) {
       )}
 
       {/* Ответ магазина: показываем текст, по кнопке открываем правку. */}
-      {review.replyBody && !open ? (
+      {savedReply && !open ? (
         <div className="rounded-xl border border-primary/30 bg-primary-soft p-3">
           <p className="text-xs font-semibold text-primary">{t("replyLabel")}</p>
-          <p className="mt-1 text-sm">{review.replyBody}</p>
+          <p className="mt-1 text-sm">{savedReply}</p>
           {review.replyDateLabel && (
             <p className="mt-1 text-xs text-muted-foreground">
               {review.replyDateLabel}
@@ -203,7 +211,7 @@ function ReviewRowCard({ review }: { review: ReviewRow }) {
       {error && <p className="text-sm text-destructive">{error}</p>}
 
       <div className="flex flex-wrap items-center gap-3">
-        {review.replyBody && !open ? (
+        {savedReply && !open ? (
           <Button
             variant="outline"
             onClick={() => setOpen(true)}
@@ -215,7 +223,7 @@ function ReviewRowCard({ review }: { review: ReviewRow }) {
           </Button>
         ) : (
           <Button onClick={save} disabled={isPending} className="rounded-full">
-            {review.replyBody ? t("saveReply") : t("sendReply")}
+            {savedReply ? t("saveReply") : t("sendReply")}
           </Button>
         )}
         <button
