@@ -25,8 +25,8 @@ type NavItem = {
   icon: LucideIcon;
   /** Раздел ещё не реализован — показываем неактивным с пометкой «скоро». */
   soon?: boolean;
-  /** Показывать счётчик непрочитанных. */
-  badge?: boolean;
+  /** Какой счётчик показывать: непрочитанные события или отзывы без ответа. */
+  badge?: "unread" | "reviews";
 };
 
 // Порядок разделов админки. Нереализованные помечены soon — они видны в навигации,
@@ -39,7 +39,12 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/admin/categories", labelKey: "categories", icon: Boxes },
   { href: "/admin/discounts", labelKey: "discounts", icon: Percent, soon: true },
   { href: "/admin/banners", labelKey: "banners", icon: Images },
-  { href: "/admin/reviews", labelKey: "reviews", icon: MessageSquareText },
+  {
+    href: "/admin/reviews",
+    labelKey: "reviews",
+    icon: MessageSquareText,
+    badge: "reviews",
+  },
   { href: "/admin/content", labelKey: "content", icon: FileText, soon: true },
   {
     href: "/admin/analytics",
@@ -51,7 +56,7 @@ const NAV_ITEMS: NavItem[] = [
     href: "/admin/notifications",
     labelKey: "notifications",
     icon: Bell,
-    badge: true,
+    badge: "unread",
   },
   { href: "/admin/settings", labelKey: "settings", icon: Settings, soon: true },
 ];
@@ -65,9 +70,12 @@ function isActive(pathname: string, href: string): boolean {
 
 export function AdminNav({
   unread,
+  unansweredReviews,
   onNavigate,
 }: {
   unread: number;
+  /** Отзывы без ответа — «сколько работы», а не «сколько непрочитанного». */
+  unansweredReviews: number;
   /** Закрыть мобильное меню после перехода. */
   onNavigate?: () => void;
 }) {
@@ -79,7 +87,12 @@ export function AdminNav({
       <ul className="flex flex-col gap-0.5">
         {NAV_ITEMS.map((item) => {
           const active = !item.soon && isActive(pathname, item.href);
-          const count = item.badge ? unread : 0;
+          const count =
+            item.badge === "reviews"
+              ? unansweredReviews
+              : item.badge === "unread"
+                ? unread
+                : 0;
 
           const inner = (
             <>

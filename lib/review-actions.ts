@@ -2,6 +2,7 @@
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { notifyNewReview } from "@/lib/notifications";
 
 // Коды ошибок переводятся на клиенте (Product.Reviews.Errors.*).
 export type ReviewResult = { error?: string };
@@ -31,18 +32,32 @@ export async function submitReview(
 
   const product = await prisma.product.findUnique({
     where: { id: productId },
-    select: { id: true },
+    select: { id: true, nameRu: true, nameAz: true },
   });
   if (!product) return { error: "not_found" };
 
+  const stars = Math.round(rating);
   await prisma.review.create({
     data: {
       productId,
       userId: session.user.id,
-      rating: Math.round(rating),
+      rating: stars,
       body: body.trim(),
     },
   });
+
+  // Уведомляем владельца — но осечка уведомления не должна ронять отзыв,
+  // он уже сохранён (тот же принцип, что при оформлении заказа).
+  try {
+    await notifyNewReview({
+      productNameRu: product.nameRu,
+      productNameAz: product.nameAz,
+      rating: stars,
+      author: session.user.name ?? session.user.email ?? "",
+    });
+  } catch (e) {
+    console.error("notifyNewReview failed", e);
+  }
 
   return {};
 }

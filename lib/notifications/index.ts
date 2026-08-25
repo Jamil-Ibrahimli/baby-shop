@@ -100,6 +100,34 @@ export async function notifyCustomerOrderStatus(params: {
   });
 }
 
+// In-app уведомление АДМИНУ: покупатель написал отзыв. Без этого о новом отзыве
+// никто не сообщал — владелец узнавал о нём, только открыв раздел «Отзывы»,
+// и плохой отзыв мог висеть без ответа неделями. Заказа за уведомлением нет,
+// поэтому в ленте оно идёт «системным», а название товара — в заголовке.
+export async function notifyNewReview(params: {
+  productNameRu: string;
+  productNameAz: string;
+  rating: number;
+  author: string;
+}): Promise<void> {
+  const { productNameRu, productNameAz, rating, author } = params;
+
+  const [tRu, tAz] = await Promise.all([
+    getTranslations({ locale: "ru", namespace: "Notifications" }),
+    getTranslations({ locale: "az", namespace: "Notifications" }),
+  ]);
+
+  await prisma.notification.create({
+    data: {
+      type: "new_review",
+      recipientRole: "admin",
+      titleRu: tRu("newReview", { product: productNameRu, rating, author }),
+      titleAz: tAz("newReview", { product: productNameAz, rating, author }),
+      isRead: false,
+    },
+  });
+}
+
 // In-app уведомление КЛИЕНТУ: магазин ответил на его отзыв. Заказа за этим
 // уведомлением нет, поэтому карточка в ленте будет без ссылки — название товара
 // подставляем прямо в заголовок, чтобы понятно было, о чём речь.

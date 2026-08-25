@@ -23,8 +23,9 @@ export default async function AdminReviewsPage({
     ? locale
     : routing.defaultLocale;
 
-  const [t, reviews] = await Promise.all([
+  const [t, tStatus, reviews] = await Promise.all([
     getTranslations("Admin.Reviews"),
+    getTranslations("OrderStatus"),
     getAdminReviews(),
   ]);
 
@@ -43,6 +44,16 @@ export default async function AdminReviewsPage({
     author: r.user?.name || r.user?.email || t("anonymous"),
     productName: az ? r.product.nameAz : r.product.nameRu,
     productSlug: r.product.slug,
+    productImageUrl: r.product.images[0]?.url ?? null,
+    purchases: r.purchases.map((p) => ({
+      orderId: p.order.id,
+      orderNumber: p.order.orderNumber,
+      statusLabel: tStatus(p.order.status),
+      dateLabel: dateFmt.format(p.order.createdAt),
+      sizeLabel: az ? p.sizeLabelAz : p.sizeLabelRu,
+      color: az ? p.colorAz : p.colorRu,
+      quantity: p.quantity,
+    })),
   }));
 
   const unanswered = rows.filter((r) => !r.replyBody).length;

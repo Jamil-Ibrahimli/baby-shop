@@ -431,7 +431,9 @@
       "Errors": {
         "forbidden": "Kifayət qədər hüquq yoxdur",
         "not_found": "Rəy tapılmadı"
-      }
+      },
+      "purchasesTitle": "Bu müştəri nə alıb",
+      "noPurchase": "Müştərinin bu məhsula sifarişi yoxdur — alış olmadan rəy."
     }
   },
   "Notifications": {
@@ -456,7 +458,8 @@
       "orders": "Sifarişlər",
       "system": "Sistem"
     },
-    "reviewReplied": "Mağaza rəyinizə cavab verdi: {product}"
+    "reviewReplied": "Mağaza rəyinizə cavab verdi: {product}",
+    "newReview": "Yeni rəy: {product} — 5-dən {rating}, {author}"
   },
   "Checkout": {
     "title": "Sifarişin rəsmiləşdirilməsi",

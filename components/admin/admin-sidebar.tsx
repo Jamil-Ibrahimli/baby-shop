@@ -19,10 +19,12 @@ type AdminUser = { name: string; email: string | null };
 // Одно и то же и на десктопе (постоянный сайдбар), и в мобильном меню (sheet).
 function SidebarBody({
   unread,
+  unansweredReviews,
   user,
   onNavigate,
 }: {
   unread: number;
+  unansweredReviews: number;
   user: AdminUser;
   onNavigate?: () => void;
 }) {
@@ -42,7 +44,11 @@ function SidebarBody({
         </span>
       </Link>
 
-      <AdminNav unread={unread} onNavigate={onNavigate} />
+      <AdminNav
+        unread={unread}
+        unansweredReviews={unansweredReviews}
+        onNavigate={onNavigate}
+      />
 
       {/* Тёплая карточка с маскотом — «мягкая» пауза между навигацией и профилем */}
       <div className="mt-auto rounded-2xl bg-primary-soft p-4 text-center">
@@ -64,14 +70,20 @@ function SidebarBody({
 // Постоянный сайдбар (десктоп).
 export function AdminSidebar({
   unread,
+  unansweredReviews,
   user,
 }: {
   unread: number;
+  unansweredReviews: number;
   user: AdminUser;
 }) {
   return (
     <aside className="sticky top-0 hidden h-svh w-64 shrink-0 border-r border-border bg-card lg:block">
-      <SidebarBody unread={unread} user={user} />
+      <SidebarBody
+        unread={unread}
+        unansweredReviews={unansweredReviews}
+        user={user}
+      />
     </aside>
   );
 }
@@ -79,9 +91,11 @@ export function AdminSidebar({
 // Мобильная шапка админки: кнопка меню (открывает тот же сайдбар в sheet) + логотип.
 export function AdminMobileBar({
   unread,
+  unansweredReviews,
   user,
 }: {
   unread: number;
+  unansweredReviews: number;
   user: AdminUser;
 }) {
   const t = useTranslations("Admin.Nav");
@@ -105,6 +119,7 @@ export function AdminMobileBar({
         <SheetContent side="left" className="w-72 gap-0 p-0">
           <SidebarBody
             unread={unread}
+            unansweredReviews={unansweredReviews}
             user={user}
             onNavigate={() => setOpen(false)}
           />

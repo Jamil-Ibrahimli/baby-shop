@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
-import { MessageSquareReply, Trash2 } from "lucide-react";
+import { ImageOff, MessageSquareReply, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Link, useRouter } from "@/i18n/navigation";
@@ -10,6 +10,17 @@ import { StarRating } from "@/components/product/star-rating";
 import { replyToReview, deleteReviewAsAdmin } from "@/lib/admin/review-actions";
 import { CONTROL_CLASS } from "./form-fields";
 import { cn } from "@/lib/utils";
+
+/** Что покупатель брал из этого товара — контекст для жалоб на брак. */
+export type ReviewPurchase = {
+  orderId: string;
+  orderNumber: string;
+  statusLabel: string;
+  dateLabel: string;
+  sizeLabel: string;
+  color: string;
+  quantity: number;
+};
 
 export type ReviewRow = {
   id: string;
@@ -22,6 +33,8 @@ export type ReviewRow = {
   author: string;
   productName: string;
   productSlug: string;
+  productImageUrl: string | null;
+  purchases: ReviewPurchase[];
 };
 
 export function ReviewManager({ reviews }: { reviews: ReviewRow[] }) {
@@ -79,16 +92,31 @@ function ReviewRowCard({ review }: { review: ReviewRow }) {
   return (
     <li className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-4 shadow-sm">
       <div className="flex flex-wrap items-start justify-between gap-2">
-        <div className="min-w-0">
-          <Link
-            href={`/product/${review.productSlug}`}
-            className="font-heading text-sm font-bold hover:text-primary"
-          >
-            {review.productName}
-          </Link>
-          <p className="mt-0.5 text-xs text-muted-foreground">
-            {review.author} · {review.dateLabel}
-          </p>
+        {/* Фото товара — узнаётся быстрее названия. */}
+        <div className="flex min-w-0 gap-3">
+          {review.productImageUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={review.productImageUrl}
+              alt=""
+              className="size-12 shrink-0 rounded-lg object-cover"
+            />
+          ) : (
+            <span className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+              <ImageOff className="size-4" aria-hidden />
+            </span>
+          )}
+          <div className="min-w-0">
+            <Link
+              href={`/product/${review.productSlug}`}
+              className="font-heading text-sm font-bold hover:text-primary"
+            >
+              {review.productName}
+            </Link>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              {review.author} · {review.dateLabel}
+            </p>
+          </div>
         </div>
         <div className="flex items-center gap-3">
           <StarRating value={review.rating} />
@@ -107,6 +135,39 @@ function ReviewRowCard({ review }: { review: ReviewRow }) {
         )}
         <p className="text-sm text-muted-foreground">{review.body}</p>
       </div>
+
+      {/* Что человек покупал: размер, цвет, номер заказа. Без этого по жалобе
+          «пришло с браком» непонятно, какой вариант заменять. */}
+      {review.purchases.length > 0 ? (
+        <div className="rounded-xl border border-border p-3">
+          <p className="text-xs font-semibold text-muted-foreground">
+            {t("purchasesTitle")}
+          </p>
+          <ul className="mt-1 flex flex-col gap-1">
+            {review.purchases.map((p) => (
+              <li
+                key={`${p.orderId}-${p.sizeLabel}-${p.color}`}
+                className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-sm"
+              >
+                <Link
+                  href={`/admin/orders/${p.orderId}`}
+                  className="font-medium text-primary hover:underline"
+                >
+                  {p.orderNumber}
+                </Link>
+                <span className="text-muted-foreground">
+                  {p.sizeLabel} · {p.color} × {p.quantity}
+                </span>
+                <span className="text-xs text-muted-foreground/70">
+                  {p.statusLabel} · {p.dateLabel}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : (
+        <p className="text-xs text-muted-foreground">{t("noPurchase")}</p>
+      )}
 
       {/* Ответ магазина: показываем текст, по кнопке открываем правку. */}
       {review.replyBody && !open ? (

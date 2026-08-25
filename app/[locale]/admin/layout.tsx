@@ -4,6 +4,7 @@ import { hasLocale } from "next-intl";
 import { auth } from "@/auth";
 import { routing, type Locale } from "@/i18n/routing";
 import { getAdminUnreadCount } from "@/lib/notifications";
+import { getUnansweredReviewCount } from "@/lib/admin/reviews";
 import { AdminSidebar, AdminMobileBar } from "@/components/admin/admin-sidebar";
 import { AdminSupportFooter } from "@/components/admin/admin-support-footer";
 
@@ -29,7 +30,12 @@ export default async function AdminLayout({
   }
 
   const t = await getTranslations("Auth.Account");
-  const unread = await getAdminUnreadCount();
+  // Два разных счётчика: лента показывает непрочитанные события, раздел
+  // «Отзывы» — сколько отзывов ждут ответа (не пропадает от простого просмотра).
+  const [unread, unansweredReviews] = await Promise.all([
+    getAdminUnreadCount(),
+    getUnansweredReviewCount(),
+  ]);
   const user = {
     name: session.user.name ?? t("roleAdmin"),
     email: session.user.email ?? null,
@@ -37,9 +43,17 @@ export default async function AdminLayout({
 
   return (
     <div className="flex min-h-svh w-full bg-surface">
-      <AdminSidebar unread={unread} user={user} />
+      <AdminSidebar
+        unread={unread}
+        unansweredReviews={unansweredReviews}
+        user={user}
+      />
       <div className="flex min-w-0 flex-1 flex-col">
-        <AdminMobileBar unread={unread} user={user} />
+        <AdminMobileBar
+          unread={unread}
+          unansweredReviews={unansweredReviews}
+          user={user}
+        />
         {children}
         <AdminSupportFooter />
       </div>

@@ -431,7 +431,9 @@
       "Errors": {
         "forbidden": "Недостаточно прав",
         "not_found": "Отзыв не найден"
-      }
+      },
+      "purchasesTitle": "Что покупал этот клиент",
+      "noPurchase": "Заказов на этот товар у клиента нет — отзыв без покупки."
     }
   },
   "Notifications": {
@@ -456,7 +458,8 @@
       "orders": "Заказы",
       "system": "Системные"
     },
-    "reviewReplied": "Магазин ответил на ваш отзыв: {product}"
+    "reviewReplied": "Магазин ответил на ваш отзыв: {product}",
+    "newReview": "Новый отзыв: {product} — {rating} из 5, {author}"
   },
   "Checkout": {
     "title": "Оформление заказа",
