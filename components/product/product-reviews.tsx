@@ -100,7 +100,7 @@ export async function ProductReviews({
           <p className="mt-1 text-sm text-muted-foreground">{t("emptyHint")}</p>
         </div>
       ) : (
-        <ul className="flex flex-col gap-8">
+        <ul className="flex flex-col gap-14">
           {reviews.map((r) => (
             <ReviewCard
               key={r.id}
