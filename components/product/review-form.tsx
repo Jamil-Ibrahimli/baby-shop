@@ -106,7 +106,7 @@ export function ReviewForm({
               className={cn(
                 "size-6 transition-colors",
                 i <= display
-                  ? "fill-primary text-primary"
+                  ? "fill-amber-400 text-amber-400"
                   : "fill-transparent text-muted-foreground/40",
               )}
             />

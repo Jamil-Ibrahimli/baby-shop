@@ -113,7 +113,7 @@ export function ProductCard({
 
           {ratingCount > 0 && ratingAvg !== null && (
             <div className="flex items-center gap-1.5">
-              <StarRating value={ratingAvg} tone="amber" size="size-3.5" />
+              <StarRating value={ratingAvg} size="size-3.5" />
               <span className="text-xs text-muted-foreground">
                 {ratingAvg} ({ratingCount})
               </span>
