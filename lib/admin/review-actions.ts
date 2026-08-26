@@ -48,6 +48,8 @@ export async function replyToReview(
   if (text && !review.replyBody) {
     await notifyCustomerReviewReply({
       userId: review.userId,
+      reviewId: review.id,
+      productSlug: review.product.slug,
       productNameRu: review.product.nameRu,
       productNameAz: review.product.nameAz,
     });

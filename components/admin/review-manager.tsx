@@ -98,7 +98,10 @@ function ReviewRowCard({ review }: { review: ReviewRow }) {
   }
 
   return (
-    <li className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-4 shadow-sm">
+    <li
+      id={`review-${review.id}`}
+      className="flex scroll-mt-20 flex-col gap-3 rounded-2xl border border-border bg-card p-4 shadow-sm"
+    >
       <div className="flex flex-wrap items-start justify-between gap-2">
         {/* Фото товара — узнаётся быстрее названия. */}
         <div className="flex min-w-0 gap-3">

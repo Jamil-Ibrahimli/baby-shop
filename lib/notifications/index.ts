@@ -105,12 +105,13 @@ export async function notifyCustomerOrderStatus(params: {
 // и плохой отзыв мог висеть без ответа неделями. Заказа за уведомлением нет,
 // поэтому в ленте оно идёт «системным», а название товара — в заголовке.
 export async function notifyNewReview(params: {
+  reviewId: string;
   productNameRu: string;
   productNameAz: string;
   rating: number;
   author: string;
 }): Promise<void> {
-  const { productNameRu, productNameAz, rating, author } = params;
+  const { reviewId, productNameRu, productNameAz, rating, author } = params;
 
   const [tRu, tAz] = await Promise.all([
     getTranslations({ locale: "ru", namespace: "Notifications" }),
@@ -123,20 +124,25 @@ export async function notifyNewReview(params: {
       recipientRole: "admin",
       titleRu: tRu("newReview", { product: productNameRu, rating, author }),
       titleAz: tAz("newReview", { product: productNameAz, rating, author }),
+      // Ведём прямо к этому отзыву в разделе «Отзывы», а не просто в раздел.
+      link: `/admin/reviews#review-${reviewId}`,
       isRead: false,
     },
   });
 }
 
 // In-app уведомление КЛИЕНТУ: магазин ответил на его отзыв. Заказа за этим
-// уведомлением нет, поэтому карточка в ленте будет без ссылки — название товара
-// подставляем прямо в заголовок, чтобы понятно было, о чём речь.
+// уведомлением нет, поэтому ссылку кладём в поле link — с якорем на конкретный
+// отзыв, чтобы клик открывал именно его, а не просто страницу товара.
 export async function notifyCustomerReviewReply(params: {
   userId: string;
+  reviewId: string;
+  productSlug: string;
   productNameRu: string;
   productNameAz: string;
 }): Promise<void> {
-  const { userId, productNameRu, productNameAz } = params;
+  const { userId, reviewId, productSlug, productNameRu, productNameAz } =
+    params;
 
   const [tRu, tAz] = await Promise.all([
     getTranslations({ locale: "ru", namespace: "Notifications" }),
@@ -150,6 +156,7 @@ export async function notifyCustomerReviewReply(params: {
       userId,
       titleRu: tRu("reviewReplied", { product: productNameRu }),
       titleAz: tAz("reviewReplied", { product: productNameAz }),
+      link: `/product/${productSlug}#review-${reviewId}`,
       isRead: false,
     },
   });

@@ -46,7 +46,9 @@ export function ReviewCard({
   return (
     // Без рамки и фона: отзывы читаются лентой, а не набором коробок.
     // Разделяет их только вертикальный отступ списка.
-    <li>
+    // id — цель ссылки из уведомления «магазин ответил на ваш отзыв».
+    // scroll-mt-20: липкая шапка не должна накрыть карточку при переходе.
+    <li id={`review-${review.id}`} className="scroll-mt-20">
       <div className="flex items-center justify-between gap-2">
         <span className="font-medium">
           {review.author ?? t("anonymous")}

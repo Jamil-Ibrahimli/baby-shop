@@ -430,6 +430,12 @@ model Notification {
   bodyRu  String?
   bodyAz  String?
 
+  // Куда ведёт карточка уведомления. Внутренний путь без локали, можно с якорем:
+  // "/product/slug#review-abc" или "/admin/reviews#review-abc". Нужен для
+  // уведомлений, за которыми нет заказа (например ответ магазина на отзыв):
+  // без него карточка была без ссылки. Пусто — ссылку собираем по orderId.
+  link String?
+
   isRead    Boolean  @default(false)
   createdAt DateTime @default(now())
 

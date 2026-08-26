@@ -37,7 +37,7 @@ export async function submitReview(
   if (!product) return { error: "not_found" };
 
   const stars = Math.round(rating);
-  await prisma.review.create({
+  const created = await prisma.review.create({
     data: {
       productId,
       userId: session.user.id,
@@ -50,6 +50,7 @@ export async function submitReview(
   // он уже сохранён (тот же принцип, что при оформлении заказа).
   try {
     await notifyNewReview({
+      reviewId: created.id,
       productNameRu: product.nameRu,
       productNameAz: product.nameAz,
       rating: stars,

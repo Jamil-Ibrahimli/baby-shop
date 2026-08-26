@@ -46,6 +46,7 @@ export function NotificationItem({
   kind = "order",
   recipient,
   orderId,
+  link,
 }: {
   id: string;
   title: string;
@@ -68,18 +69,25 @@ export function NotificationItem({
   kind?: "order" | "system";
   recipient: "admin" | "customer";
   orderId?: string | null;
+  /**
+   * Готовая ссылка из уведомления (с якорем на конкретный объект). Задаётся,
+   * когда за уведомлением нет заказа — например «магазин ответил на отзыв».
+   * Если есть, она главнее собранной по orderId.
+   */
+  link?: string | null;
 }) {
   const t = useTranslations("Notifications");
   const [, startTransition] = useTransition();
 
   const href =
-    recipient === "admin"
+    link ??
+    (recipient === "admin"
       ? orderId
         ? `/admin/orders/${orderId}`
         : null
       : orderNumber
         ? `/order/${orderNumber}`
-        : null;
+        : null);
 
   function markRead() {
     if (isRead) return;

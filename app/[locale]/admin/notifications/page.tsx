@@ -152,6 +152,7 @@ export default async function AdminNotificationsPage({
                     }
                     orderStatus={n.order?.status ?? null}
                     orderId={n.orderId}
+                    link={n.link}
                     date={dateTimeFmt.format(n.createdAt)}
                   />
                 ))}

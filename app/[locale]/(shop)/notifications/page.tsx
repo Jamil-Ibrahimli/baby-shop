@@ -19,7 +19,8 @@ import { NotificationsFilter } from "@/components/admin/notifications-filter";
 
 // Табы оставляем только «Все» и «Новые»: делить уведомления покупателя на
 // «Заказы» и «Системные» смысла мало — их и так немного (статусы заказа плюс
-// ответы магазина на отзывы, у последних заказа нет и карточка идёт без ссылки).
+// ответы магазина на отзывы; у последних заказа нет, зато есть своя ссылка
+// с якорем на конкретный отзыв — поле Notification.link).
 const CUSTOMER_FILTERS: readonly NotificationFilter[] = ["all", "unread"];
 
 // Уведомления покупателя — ОТДЕЛЬНАЯ страница (кабинет остаётся только про
@@ -161,6 +162,7 @@ export default async function NotificationsPage({
                     title={(loc === "az" ? n.titleAz : n.titleRu) ?? t("title")}
                     orderNumber={n.order?.orderNumber ?? null}
                     showOrderNumber={false}
+                    link={n.link}
                     date={dateTimeFmt.format(n.createdAt)}
                   />
                 ))}
