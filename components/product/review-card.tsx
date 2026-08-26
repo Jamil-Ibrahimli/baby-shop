@@ -46,7 +46,7 @@ export function ReviewCard({
   return (
     // Без рамки и фона: отзывы читаются лентой, а не набором коробок.
     // Разделяет их только вертикальный отступ списка.
-    <li className="py-1">
+    <li>
       <div className="flex items-center justify-between gap-2">
         <span className="font-medium">
           {review.author ?? t("anonymous")}

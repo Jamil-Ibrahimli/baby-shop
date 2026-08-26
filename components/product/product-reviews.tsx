@@ -14,7 +14,8 @@ import type { ReviewVM } from "@/lib/product-types";
 import type { Locale } from "@/i18n/routing";
 
 // Блок отзывов: средняя оценка, форма (для авторизованных) или приглашение войти,
-// список отзывов (новые сверху). Свой отзыв показывается в форме, а не в списке.
+// список отзывов лентой без рамок (новые сверху). Свои отзывы тоже в списке —
+// помечены и правятся прямо в карточке; форма всегда пустая, под новый отзыв.
 export async function ProductReviews({
   productId,
   reviews,
@@ -99,7 +100,7 @@ export async function ProductReviews({
           <p className="mt-1 text-sm text-muted-foreground">{t("emptyHint")}</p>
         </div>
       ) : (
-        <ul className="flex flex-col gap-4">
+        <ul className="flex flex-col gap-8">
           {reviews.map((r) => (
             <ReviewCard
               key={r.id}
