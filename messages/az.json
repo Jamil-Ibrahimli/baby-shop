@@ -579,5 +579,11 @@
       "cta": "Kataloqa"
     },
     "savings": "Qənaətiniz"
+  },
+  "Footer": {
+    "shopTitle": "Mağaza",
+    "contactsTitle": "Əlaqə",
+    "copyright": "© {year} {shop}. Bütün hüquqlar qorunur.",
+    "paymentNote": "Ödəniş çatdırılma zamanı"
   }
 }

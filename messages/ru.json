@@ -579,5 +579,11 @@
       "cta": "В каталог"
     },
     "savings": "Вы экономите"
+  },
+  "Footer": {
+    "shopTitle": "Магазин",
+    "contactsTitle": "Связаться",
+    "copyright": "© {year} {shop}. Все права защищены.",
+    "paymentNote": "Оплата при получении"
   }
 }
