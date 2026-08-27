@@ -32,7 +32,7 @@ export async function submitReview(
 
   const product = await prisma.product.findUnique({
     where: { id: productId },
-    select: { id: true, slug: true, nameRu: true, nameAz: true },
+    select: { id: true, nameRu: true, nameAz: true },
   });
   if (!product) return { error: "not_found" };
 
@@ -51,7 +51,6 @@ export async function submitReview(
   try {
     await notifyNewReview({
       reviewId: created.id,
-      productSlug: product.slug,
       productNameRu: product.nameRu,
       productNameAz: product.nameAz,
       rating: stars,
