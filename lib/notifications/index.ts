@@ -106,12 +106,14 @@ export async function notifyCustomerOrderStatus(params: {
 // поэтому в ленте оно идёт «системным», а название товара — в заголовке.
 export async function notifyNewReview(params: {
   reviewId: string;
+  productSlug: string;
   productNameRu: string;
   productNameAz: string;
   rating: number;
   author: string;
 }): Promise<void> {
-  const { reviewId, productNameRu, productNameAz, rating, author } = params;
+  const { reviewId, productSlug, productNameRu, productNameAz, rating, author } =
+    params;
 
   const [tRu, tAz] = await Promise.all([
     getTranslations({ locale: "ru", namespace: "Notifications" }),
@@ -124,8 +126,9 @@ export async function notifyNewReview(params: {
       recipientRole: "admin",
       titleRu: tRu("newReview", { product: productNameRu, rating, author }),
       titleAz: tAz("newReview", { product: productNameAz, rating, author }),
-      // Ведём прямо к этому отзыву в разделе «Отзывы», а не просто в раздел.
-      link: `/admin/reviews#review-${reviewId}`,
+      // Ведём на сам отзыв НА СТРАНИЦЕ ТОВАРА: владелец видит его так же, как
+      // видит покупатель. Отвечать — из раздела «Отзывы» в админке.
+      link: `/product/${productSlug}#review-${reviewId}`,
       isRead: false,
     },
   });
