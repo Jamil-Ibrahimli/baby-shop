@@ -48,16 +48,23 @@ export async function submitReview(
 
   // Уведомляем владельца — но осечка уведомления не должна ронять отзыв,
   // он уже сохранён (тот же принцип, что при оформлении заказа).
-  try {
-    await notifyNewReview({
-      reviewId: created.id,
-      productNameRu: product.nameRu,
-      productNameAz: product.nameAz,
-      rating: stars,
-      author: session.user.name ?? session.user.email ?? "",
-    });
-  } catch (e) {
-    console.error("notifyNewReview failed", e);
+  //
+  // Свой отзыв магазину не анонсируем: если пишет администратор, лента магазина
+  // получила бы уведомление от самой себя. На витрине админ во всём остальном
+  // остаётся обычным покупателем — заказы и ответы на его отзывы приходят ему
+  // как любому клиенту (роль там не проверяется вовсе).
+  if (session.user.role !== "admin") {
+    try {
+      await notifyNewReview({
+        reviewId: created.id,
+        productNameRu: product.nameRu,
+        productNameAz: product.nameAz,
+        rating: stars,
+        author: session.user.name ?? session.user.email ?? "",
+      });
+    } catch (e) {
+      console.error("notifyNewReview failed", e);
+    }
   }
 
   return {};
