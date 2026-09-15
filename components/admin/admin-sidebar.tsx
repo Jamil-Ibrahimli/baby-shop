@@ -9,7 +9,6 @@ import type { Locale } from "@/i18n/routing";
 import { Logo } from "@/components/brand/logo";
 import { BearMascot } from "@/components/brand/bear-mascot";
 import { LocaleSwitcher } from "@/components/locale-switcher";
-import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { AdminNav } from "@/components/admin/admin-nav";
 import { AdminUserCard } from "@/components/admin/admin-user-card";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -61,10 +60,7 @@ function SidebarBody({
       </div>
 
       <div className="flex flex-col gap-3">
-        <div className="flex items-center gap-2">
-          <LocaleSwitcher />
-          <ThemeToggle />
-        </div>
+        <LocaleSwitcher />
         <AdminUserCard name={user.name} email={user.email} />
       </div>
     </div>

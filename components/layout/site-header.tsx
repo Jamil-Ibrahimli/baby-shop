@@ -6,7 +6,6 @@ import { getCartCount } from "@/lib/cart";
 import { getCustomerUnreadCount } from "@/lib/notifications";
 import { auth } from "@/auth";
 import { LocaleSwitcher } from "@/components/locale-switcher";
-import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { AccountMenu } from "@/components/layout/account-menu";
 
 // Шапка сайта: бренд, каталог, язык, аккаунт, «колокольчик» покупателя, корзина.
@@ -25,10 +24,11 @@ export async function SiteHeader() {
     : 0;
 
   return (
-    // Шапка отделяется от контента ЦВЕТОМ, а не линией: в светлой теме берёт
-    // мягкую подложку surface (#F7F9F8) на белом фоне, в тёмной — цвет карточки,
-    // который там светлее фона. Нижней границы нет намеренно; полупрозрачность
-    // с размытием оставлена, поэтому контент под шапкой просвечивает.
+    // Шапка отделяется от контента ЦВЕТОМ, а не линией: берёт мягкую тёплую
+    // подложку surface поверх молочного фона страницы. Нижней границы нет
+    // намеренно; полупрозрачность с размытием оставлена, поэтому контент под
+    // шапкой просвечивает. Класс dark: оставлен на будущее — тёмная тема
+    // сейчас выключена, см. app/[locale]/layout.tsx.
     <header className="sticky top-0 z-40 bg-surface/80 backdrop-blur dark:bg-card/85">
       <div className="mx-auto flex h-14 w-full max-w-site items-center gap-4 px-4 sm:px-6">
         <Link href="/" aria-label={t("home")} className="shrink-0">
@@ -46,7 +46,6 @@ export async function SiteHeader() {
 
         <div className="ml-auto flex items-center gap-2">
           <LocaleSwitcher />
-          <ThemeToggle />
           {session?.user && (
             <Link
               href="/notifications"

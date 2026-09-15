@@ -44,6 +44,13 @@
   --color-primary-soft: var(--primary-soft);
   --color-secondary-light: var(--secondary-light);
   --color-secondary-light-foreground: var(--secondary-light-foreground);
+  /* Акценты категорий из макета «Яркий и живой». */
+  --color-accent-blue: var(--accent-blue);
+  --color-accent-blue-foreground: var(--accent-blue-foreground);
+  --color-accent-blue-light: var(--accent-blue-light);
+  --color-accent-green: var(--accent-green);
+  --color-accent-green-foreground: var(--accent-green-foreground);
+  --color-accent-green-light: var(--accent-green-light);
   /* Ширина контейнера сайта (утилита max-w-site): шапка, подвал, главная,
      каталог, страница товара. 1400 px видимого контента + по 24 px боковых
      отступов — ровно столько, сколько намеряешь в инспекторе.

@@ -1,20 +1,28 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { Inter, Nunito } from "next/font/google";
+import { Rubik, Nunito } from "next/font/google";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
 import { routing, type Locale } from "@/i18n/routing";
 import { brand, brandThemeCss } from "@/config/brand";
-import { THEME_INIT_SCRIPT } from "@/lib/theme";
 import "../globals.css";
 
+// Основной шрифт из макета «Яркий и живой».
 // Кириллица (ru) + расширенная латиница (az: ə, ğ, ş, ...) + латиница.
-const inter = Inter({
+const rubik = Rubik({
   subsets: ["latin", "latin-ext", "cyrillic"],
   variable: "--font-sans",
 });
 
-// Дружелюбный округлый шрифт для заголовков и логотипа (поддерживает ru + az).
+/**
+ * Заголовки и логотип.
+ *
+ * В макете стоял Baloo 2, но у него НЕТ кириллицы (проверено по данным
+ * next/font: devanagari, latin, latin-ext, vietnamese) — русские заголовки
+ * молча падали бы в системный шрифт, и именно им они нарисованы на холсте.
+ * Nunito — ближайший по характеру из шрифтов с кириллицей: такой же
+ * округлый и дружелюбный, с тяжёлыми начертаниями.
+ */
 const nunito = Nunito({
   subsets: ["latin", "latin-ext", "cyrillic"],
   weight: ["600", "700", "800"],
@@ -56,26 +64,26 @@ export default async function LocaleLayout({
   setRequestLocale(locale);
 
   return (
-    // suppressHydrationWarning: класс dark на <html> дописывает скрипт ниже,
-    // то есть разметка на клиенте заведомо отличается от серверной.
     <html
       lang={locale}
-      className={`${inter.variable} ${nunito.variable} h-full antialiased`}
-      suppressHydrationWarning
+      className={`${rubik.variable} ${nunito.variable} h-full antialiased`}
     >
       {/* Обе палитры бренда (:root и .dark) из config/brand.ts. Раньше цвета
           вешались инлайн-стилем на <html>, но инлайн сильнее любого селектора и
           правило .dark не могло его перебить — тёмная тема была невозможна.
           href + precedence — это React 19: стиль поднимается в <head> и при
-          навигации не дублируется. */}
+          навигации не дублируется.
+
+          ТЁМНАЯ ТЕМА ВРЕМЕННО ВЫКЛЮЧЕНА (макет её не описывает). Блок .dark
+          по-прежнему печатается, но класс dark на <html> больше никто не
+          ставит, поэтому правило не срабатывает. Чтобы вернуть тему: подключить
+          сюда THEME_INIT_SCRIPT из lib/theme.ts (и обратно suppressHydrationWarning
+          на <html>, иначе класс от скрипта даст расхождение разметки) плюс
+          вернуть <ThemeToggle /> в шапку витрины и в сайдбар админки. */}
       <style href="brand-theme" precedence="high">
         {brandThemeCss()}
       </style>
       <body className="min-h-full flex flex-col bg-background text-foreground font-sans">
-        {/* Ставит класс dark ДО первой отрисовки. Сервер не знает ни localStorage,
-            ни настроек ОС и всегда отдаёт светлую разметку, поэтому без этого
-            скрипта тёмная тема мигала бы белым на каждом переходе. */}
-        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
         <NextIntlClientProvider>{children}</NextIntlClientProvider>
       </body>
     </html>
