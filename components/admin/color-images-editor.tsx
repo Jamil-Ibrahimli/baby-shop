@@ -44,7 +44,7 @@ export function ColorImagesEditor({
         >
           <div className="mb-3 flex items-center gap-2 border-b border-border pb-2">
             <span
-              className="size-4 rounded-full border border-black/10"
+              className="size-4 rounded-full border border-black/10 dark:border-white/20"
               style={{ backgroundColor: c.hex || "transparent" }}
               aria-hidden
             />

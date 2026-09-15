@@ -132,7 +132,7 @@ function ReviewRowCard({ review }: { review: ReviewRow }) {
         <div className="flex items-center gap-3">
           <StarRating value={review.rating} />
           {!savedReply && (
-            <span className="rounded-full bg-secondary-light px-2 py-0.5 text-xs font-medium text-secondary-foreground">
+            <span className="rounded-full bg-secondary-light px-2 py-0.5 text-xs font-medium text-secondary-light-foreground">
               {t("unanswered")}
             </span>
           )}

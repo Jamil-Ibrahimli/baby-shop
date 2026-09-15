@@ -72,7 +72,7 @@ export default async function AdminReviewsPage({
           {t("title")}
         </h1>
         {unanswered > 0 && (
-          <span className="rounded-full bg-secondary-light px-3 py-1 text-sm font-medium text-secondary-foreground">
+          <span className="rounded-full bg-secondary-light px-3 py-1 text-sm font-medium text-secondary-light-foreground">
             {t("unansweredCount", { count: unanswered })}
           </span>
         )}

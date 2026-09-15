@@ -287,7 +287,7 @@ export function ProductVariantSelector({
                     />
                   ) : (
                     <span
-                      className="size-7 rounded-full border border-black/10"
+                      className="size-7 rounded-full border border-black/10 dark:border-white/20"
                       style={{ backgroundColor: c.hex ?? "transparent" }}
                       aria-hidden
                     />

@@ -63,7 +63,7 @@ export default async function CartPage({
               <span>{formatPrice(cart.subtotalMinor, loc)}</span>
             </div>
             {cart.savingsMinor > 0 && (
-              <p className="flex items-center justify-between rounded-xl bg-secondary-light px-3 py-2 text-sm font-medium text-secondary-foreground">
+              <p className="flex items-center justify-between rounded-xl bg-secondary-light px-3 py-2 text-sm font-medium text-secondary-light-foreground">
                 <span>{t("savings")}</span>
                 <span>−{formatPrice(cart.savingsMinor, loc)}</span>
               </p>

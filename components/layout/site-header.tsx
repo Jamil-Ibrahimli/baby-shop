@@ -6,6 +6,7 @@ import { getCartCount } from "@/lib/cart";
 import { getCustomerUnreadCount } from "@/lib/notifications";
 import { auth } from "@/auth";
 import { LocaleSwitcher } from "@/components/locale-switcher";
+import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { AccountMenu } from "@/components/layout/account-menu";
 
 // Шапка сайта: бренд, каталог, язык, аккаунт, «колокольчик» покупателя, корзина.
@@ -41,6 +42,7 @@ export async function SiteHeader() {
 
         <div className="ml-auto flex items-center gap-2">
           <LocaleSwitcher />
+          <ThemeToggle />
           {session?.user && (
             <Link
               href="/notifications"

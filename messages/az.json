@@ -26,6 +26,12 @@
     "ru": "Русский",
     "az": "Azərbaycanca"
   },
+  "Theme": {
+    "label": "Görünüş",
+    "system": "Sistem kimi",
+    "light": "İşıqlı",
+    "dark": "Qaranlıq"
+  },
   "Common": {
     "loading": "Yüklənir…",
     "error": "Nə isə səhv oldu",

@@ -129,7 +129,7 @@ export function VariantEditor({
               <span className="flex min-w-0 items-center gap-2 text-sm font-semibold">
                 {v.colorHex && (
                   <span
-                    className="size-4 shrink-0 rounded-full border border-black/10"
+                    className="size-4 shrink-0 rounded-full border border-black/10 dark:border-white/20"
                     style={{ backgroundColor: v.colorHex }}
                     aria-hidden
                   />

@@ -70,12 +70,47 @@ export const brand = {
     secondary: "#D6A3AC", // пыльно-розовый (бейдж «Комплект», тёплые акценты)
     secondaryForeground: "#4E2831",
     secondaryLight: "#F7EBED", // светло-розовая подложка
+    // Текст НА розовой подложке. Отдельно от secondaryForeground: тот написан
+    // для насыщенного розового, а эти два цвета в тёмной теме расходятся —
+    // подложка уходит в тёмный, а текст обязан стать светлым.
+    secondaryLightForeground: "#4E2831",
     accent: "#EAF3F1", // очень светлый teal (рамка каталога, мягкие подложки)
     accentForeground: "#332E2C",
     muted: "#F1F0EC", // тёплый светло-серый (плейсхолдеры)
     mutedForeground: "#7C7773",
     border: "#E3ECEA", // мягкая холодноватая граница
     ring: "#6FAFA8",
+  },
+
+  /**
+   * ТЁМНАЯ палитра — те же роли, что и в colors, другие значения.
+   * Не «инверсия светлой»: на тёмном фоне чистый чёрный выглядит дёшево, а
+   * насыщенный бирюзовый теряет контраст. Поэтому фон — тёплый графит с лёгким
+   * зелёным подтоном (родня основному цвету), а бирюзовый и розовый осветлены,
+   * чтобы текст на них и они сами на фоне читались.
+   *
+   * Отношение «подложка темнее карточек» сохранено как в светлой теме:
+   * surface уходит вглубь, card всплывает — иначе админка теряет глубину.
+   */
+  colorsDark: {
+    background: "#15191A", // тёплый графит с зелёным подтоном
+    foreground: "#E9E6E1", // тёплый белёсый (пара к графиту #332E2C)
+    card: "#1D2223", // карточки всплывают над фоном
+    surface: "#101314", // подложка админки — глубже фона
+    primary: "#7FC5BC", // бирюзовый, осветлён ради контраста на тёмном
+    primaryForeground: "#0D2220", // тёмный текст на бирюзовой кнопке
+    primaryLight: "#1D3330", // мягкая бирюзовая подложка (бейджи)
+    primarySoft: "#182826", // ещё глубже — крупные подложки
+    secondary: "#E2B4BC", // пыльно-розовый, осветлён
+    secondaryForeground: "#392026",
+    secondaryLight: "#2E2226", // тёмно-розовая подложка
+    secondaryLightForeground: "#E8CBD1", // светло-розовый текст на ней
+    accent: "#1E2B2A",
+    accentForeground: "#E9E6E1",
+    muted: "#232829", // плейсхолдеры, скелетоны
+    mutedForeground: "#9AA2A1", // приглушённый текст
+    border: "#2B3334", // граница чуть светлее карточки
+    ring: "#7FC5BC",
   },
 
   /** Контакты магазина (публичные). */
@@ -99,15 +134,11 @@ export const brand = {
 
 export type Brand = typeof brand;
 
-/**
- * Проецирует палитру бренда в CSS-переменные shadcn/ui как объект инлайн-стилей.
- * Вешаем результат на <html style={...}> — инлайн-стиль гарантированно перебивает
- * :root из таблицы стилей (каскад), поэтому смена цвета здесь перекрашивает весь UI.
- * Радиус тоже мягкий (скруглённые формы из спецификации).
- */
-export function brandStyleVars(): Record<`--${string}`, string> {
-  const c = brand.colors;
-  return {
+type Palette = typeof brand.colors | typeof brand.colorsDark;
+
+/** Палитра → список объявлений CSS-переменных shadcn/ui. */
+function paletteVars(c: Palette): string {
+  const vars: Record<string, string> = {
     "--background": c.background,
     "--foreground": c.foreground,
     "--card": c.card,
@@ -130,6 +161,28 @@ export function brandStyleVars(): Record<`--${string}`, string> {
     "--primary-light": c.primaryLight,
     "--primary-soft": c.primarySoft,
     "--secondary-light": c.secondaryLight,
-    "--radius": "0.9rem",
+    "--secondary-light-foreground": c.secondaryLightForeground,
   };
+  return Object.entries(vars)
+    .map(([k, v]) => `${k}:${v}`)
+    .join(";");
+}
+
+/**
+ * Обе палитры бренда одним куском CSS: :root — светлая, .dark — тёмная.
+ *
+ * Раньше переменные вешались инлайн-стилем на <html>. Это удобно, пока тема
+ * одна, но инлайн-стиль сильнее ЛЮБОГО селектора, поэтому правило .dark его
+ * физически не могло перебить — тёмная тема была невозможна в принципе.
+ * Теперь это обычный CSS, и переключение темы — просто класс на <html>.
+ *
+ * Единственный источник цвета по-прежнему config/brand.ts: одноимённые
+ * переменные из globals.css удалены, чтобы значение не задавалось в двух местах.
+ * Радиус тоже мягкий (скруглённые формы из спецификации).
+ */
+export function brandThemeCss(): string {
+  return [
+    `:root{color-scheme:light;${paletteVars(brand.colors)};--radius:0.9rem}`,
+    `.dark{color-scheme:dark;${paletteVars(brand.colorsDark)}}`,
+  ].join("");
 }
