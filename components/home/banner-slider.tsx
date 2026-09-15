@@ -126,10 +126,10 @@ function BannerSlide({
   const hasText = !!(banner.title || banner.subtitle || banner.cta);
 
   const content = (
-    // Баннер на 20% ниже прежнего: было 4/3 и 16/7, стало 5/3 и 20/7.
-    // Считается по высоте, а не «на глаз»: 3/4 → 0.6 и 7/16 → 0.35 — ровно 80%
-    // от прежней высоты при той же ширине.
-    <div className="relative aspect-[5/3] w-full overflow-hidden bg-muted sm:aspect-[20/7]">
+    // Высота баннера ужималась дважды по 20%: 4/3 → 5/3 → 25/12 на телефоне и
+    // 16/7 → 20/7 → 25/7 на десктопе. Считается по высоте, а не «на глаз»:
+    // 0.75 → 0.6 → 0.48 и 0.4375 → 0.35 → 0.28 доли ширины.
+    <div className="relative aspect-[25/12] w-full overflow-hidden bg-muted sm:aspect-[25/7]">
       <Image
         src={banner.imageUrl}
         alt={banner.title ?? ""}
