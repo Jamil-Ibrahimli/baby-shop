@@ -4,7 +4,7 @@ import { ProductGridSkeleton } from "@/components/catalog/product-grid-skeleton"
 // Скелетон всей страницы каталога — показывается при переходе на маршрут.
 export default function CatalogLoading() {
   return (
-    <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:px-6">
+    <main className="mx-auto w-full max-w-site flex-1 px-4 py-8 sm:px-6">
       <div className="mb-6 space-y-2">
         <Skeleton className="h-8 w-40" />
         <Skeleton className="h-4 w-64" />

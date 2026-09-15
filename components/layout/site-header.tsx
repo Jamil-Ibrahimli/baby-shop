@@ -30,7 +30,7 @@ export async function SiteHeader() {
     // страницей видна сразу. В светлой теме так делать нечего — там и шапка, и
     // карточки одинаково белые, и разделяет их тонкая линия.
     <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur dark:bg-card/85">
-      <div className="mx-auto flex h-14 w-full max-w-6xl items-center gap-4 px-4 sm:px-6">
+      <div className="mx-auto flex h-14 w-full max-w-site items-center gap-4 px-4 sm:px-6">
         <Link href="/" aria-label={t("home")} className="shrink-0">
           <Logo />
         </Link>

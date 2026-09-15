@@ -27,7 +27,7 @@ export async function ProductGrid({
       <p className="mb-4 text-sm text-muted-foreground">
         {t("found", { count: products.length })}
       </p>
-      <div className="grid grid-cols-2 gap-x-4 gap-y-8 lg:grid-cols-3">
+      <div className="grid grid-cols-2 gap-x-4 gap-y-8 lg:grid-cols-3 xl:grid-cols-4">
         {products.map((p) => {
           const badges: CardBadge[] = [
             ...(p.isBundle

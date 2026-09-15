@@ -28,7 +28,7 @@ export async function SiteFooter({ locale }: { locale: Locale }) {
 
   return (
     <footer className="mt-12 border-t border-border bg-surface">
-      <div className="mx-auto grid w-full max-w-6xl gap-8 px-4 py-10 sm:px-6 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mx-auto grid w-full max-w-site gap-8 px-4 py-10 sm:px-6 sm:grid-cols-2 lg:grid-cols-4">
         {/* Бренд */}
         <div className="flex flex-col gap-3 lg:col-span-2">
           <Link href="/" aria-label={tHeader("home")} className="w-fit">
@@ -98,7 +98,7 @@ export async function SiteFooter({ locale }: { locale: Locale }) {
 
       {/* Нижняя строка: копирайт и честная приписка про оплату */}
       <div className="border-t border-border">
-        <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-2 px-4 py-4 text-xs text-muted-foreground sm:px-6">
+        <div className="mx-auto flex w-full max-w-site flex-wrap items-center justify-between gap-2 px-4 py-4 text-xs text-muted-foreground sm:px-6">
           <span>{t("copyright", { year, shop: brand.name })}</span>
           <span>{t("paymentNote")}</span>
         </div>

@@ -28,7 +28,7 @@ export default async function HomePage({
   const banners = await getActiveBanners(loc);
 
   return (
-    <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-10 px-4 py-6 sm:px-6 sm:py-8 sm:gap-14">
+    <main className="mx-auto flex w-full max-w-site flex-1 flex-col gap-10 px-4 py-6 sm:px-6 sm:py-8 sm:gap-14">
       {banners.length > 0 ? (
         <BannerSlider banners={banners} />
       ) : (
