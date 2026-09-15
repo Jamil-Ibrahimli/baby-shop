@@ -45,11 +45,11 @@
   --color-secondary-light: var(--secondary-light);
   --color-secondary-light-foreground: var(--secondary-light-foreground);
   /* Ширина контейнера сайта (утилита max-w-site): шапка, подвал, главная,
-     каталог, страница товара. 1450 px видимого контента + по 24 px боковых
+     каталог, страница товара. 1400 px видимого контента + по 24 px боковых
      отступов — ровно столько, сколько намеряешь в инспекторе.
      Узкие страницы (корзина, оформление, кабинет, админка) сюда НЕ входят:
      у форм и списков длинная строка читается хуже, им ширина ни к чему. */
-  --container-site: 1498px;
+  --container-site: 1448px;
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
