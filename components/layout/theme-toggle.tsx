@@ -2,59 +2,60 @@
 
 import { useCallback, useEffect, useSyncExternalStore } from "react";
 import { useTranslations } from "next-intl";
-import { Monitor, Sun, Moon, Check } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-} from "@/components/ui/dropdown-menu";
+import { Sun, Moon } from "lucide-react";
 import {
   applyThemeMode,
   DARK_QUERY,
   readThemeMode,
-  THEME_MODES,
+  resolveDark,
   THEME_STORAGE_KEY,
   type ThemeMode,
 } from "@/lib/theme";
 
-const ICONS: Record<ThemeMode, typeof Monitor> = {
-  system: Monitor,
-  light: Sun,
-  dark: Moon,
-};
-
 /**
  * Событие «тему поменяли в ЭТОЙ вкладке». Штатное storage-событие браузер шлёт
  * только другим вкладкам, поэтому своей нужен собственный сигнал — иначе иконка
- * переключателя не обновилась бы до перезагрузки.
+ * кнопки не обновилась бы до перезагрузки.
  */
 const THEME_EVENT = "balaca:themechange";
 
 function subscribe(onChange: () => void): () => void {
+  const media = window.matchMedia(DARK_QUERY);
+  media.addEventListener("change", onChange);
   window.addEventListener(THEME_EVENT, onChange);
   window.addEventListener("storage", onChange);
   return () => {
+    media.removeEventListener("change", onChange);
     window.removeEventListener(THEME_EVENT, onChange);
     window.removeEventListener("storage", onChange);
   };
 }
 
-// На сервере выбора не знаем — там всегда «системная».
-const serverSnapshot = (): ThemeMode => "system";
+// Кнопка показывает РЕЗУЛЬТАТ, а не сохранённый режим: пока выбора не было,
+// значение приходит из настроек системы.
+const isDarkNow = (): boolean => resolveDark(readThemeMode());
 
-/** Выбор темы: системная / светлая / тёмная. */
+// На сервере ни localStorage, ни настроек ОС нет — там всегда светлая.
+const serverSnapshot = (): boolean => false;
+
+/**
+ * Переключатель темы: светлая ↔ тёмная.
+ *
+ * Отдельного пункта «как в системе» нет — это состояние по умолчанию, оно
+ * работает само, пока человек не нажал кнопку. Поэтому выбора всего два, и
+ * меню для них избыточно: одна кнопка короче любого списка.
+ */
 export function ThemeToggle() {
   const t = useTranslations("Theme");
 
-  // useSyncExternalStore, а НЕ useState + useEffect: localStorage это внешнее
-  // хранилище, и хук честно разводит серверный снимок и клиентский, поэтому
-  // иконка не даёт ошибку гидратации. Заодно обходим правило React 19
-  // set-state-in-effect, которое такой синхронизации не разрешает.
-  const mode = useSyncExternalStore(subscribe, readThemeMode, serverSnapshot);
+  // useSyncExternalStore, а НЕ useState + useEffect: и localStorage, и
+  // matchMedia — внешние хранилища. Хук честно разводит серверный снимок и
+  // клиентский, поэтому иконка не даёт ошибку гидратации, и заодно обходит
+  // запрет React 19 set-state-in-effect.
+  const isDark = useSyncExternalStore(subscribe, isDarkNow, serverSnapshot);
 
-  // В системном режиме тема обязана меняться на лету, когда человек переключает
-  // её в самой ОС (например по расписанию «на закате»).
+  // Пока режим системный, тема обязана меняться на лету вслед за ОС
+  // (например, когда та переключается по расписанию «на закате»).
   useEffect(() => {
     const media = window.matchMedia(DARK_QUERY);
     const sync = () => applyThemeMode(readThemeMode());
@@ -72,36 +73,20 @@ export function ThemeToggle() {
     window.dispatchEvent(new Event(THEME_EVENT));
   }, []);
 
-  const Icon = ICONS[mode];
+  // Иконка и подпись описывают то, что произойдёт ПОСЛЕ нажатия: у голой
+  // картинки солнца/луны иначе не понять, это текущее состояние или кнопка.
+  const label = isDark ? t("toLight") : t("toDark");
+  const Icon = isDark ? Sun : Moon;
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger
-        aria-label={t("label")}
-        title={t("label")}
-        className="inline-flex size-9 items-center justify-center rounded-full outline-none transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring"
-      >
-        <Icon className="size-5" aria-hidden />
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-44">
-        {THEME_MODES.map((item) => {
-          const ItemIcon = ICONS[item];
-          const isActive = item === mode;
-          return (
-            <DropdownMenuItem
-              key={item}
-              onClick={() => select(item)}
-              aria-current={isActive ? "true" : undefined}
-            >
-              <ItemIcon className="size-4" aria-hidden />
-              {t(item)}
-              {isActive && (
-                <Check className="ml-auto size-4 text-primary" aria-hidden />
-              )}
-            </DropdownMenuItem>
-          );
-        })}
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <button
+      type="button"
+      onClick={() => select(isDark ? "light" : "dark")}
+      aria-label={label}
+      title={label}
+      className="inline-flex size-9 items-center justify-center rounded-full outline-none transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring"
+    >
+      <Icon className="size-5" aria-hidden />
+    </button>
   );
 }

@@ -27,10 +27,8 @@
     "az": "Azərbaycanca"
   },
   "Theme": {
-    "label": "Görünüş",
-    "system": "Sistem kimi",
-    "light": "İşıqlı",
-    "dark": "Qaranlıq"
+    "toDark": "Qaranlıq rejimi aç",
+    "toLight": "İşıqlı rejimi aç"
   },
   "Common": {
     "loading": "Yüklənir…",
