@@ -25,7 +25,11 @@ export async function SiteHeader() {
     : 0;
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur">
+    // В тёмной теме шапка — отдельный слой НАД контентом, а не продолжение фона:
+    // она берёт цвет карточки (светлее фона), поэтому граница между «хромом» и
+    // страницей видна сразу. В светлой теме так делать нечего — там и шапка, и
+    // карточки одинаково белые, и разделяет их тонкая линия.
+    <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur dark:bg-card/85">
       <div className="mx-auto flex h-14 w-full max-w-6xl items-center gap-4 px-4 sm:px-6">
         <Link href="/" aria-label={t("home")} className="shrink-0">
           <Logo />
