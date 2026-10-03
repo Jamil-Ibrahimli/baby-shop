@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { playNotifySound } from "@/lib/notification-sound";
 
 /**
  * Как часто спрашиваем сервер. Десять секунд — компромисс: колокольчик
@@ -24,14 +25,18 @@ const MAX_FAILURES = 3;
  * сразу делается внеочередной запрос, чтобы человек не ждал целый интервал.
  * Это экономит почти всё: вкладка магазина обычно висит в фоне часами.
  *
- * @param initial  значение, посчитанное на сервере (показываем до первого ответа)
- * @param load     серверный экшен; ССЫЛКА ДОЛЖНА БЫТЬ СТАБИЛЬНОЙ — передавайте
- *                 импортированный экшен, а не стрелку, объявленную в рендере,
- *                 иначе эффект будет перезапускаться на каждый рендер.
+ * @param initial   значение, посчитанное на сервере (показываем до первого ответа)
+ * @param load      серверный экшен; ССЫЛКА ДОЛЖНА БЫТЬ СТАБИЛЬНОЙ — передавайте
+ *                  импортированный экшен, а не стрелку, объявленную в рендере,
+ *                  иначе эффект будет перезапускаться на каждый рендер.
+ * @param soundSrc  звук, которым сообщаем о НОВОМ уведомлении (путь из
+ *                  NOTIFY_SOUND). Звучит, только когда счётчик ВЫРОС: не при
+ *                  первом ответе, не когда человек прочитал и число упало.
  */
 export function useLiveCount(
   initial: number,
   load: () => Promise<number>,
+  soundSrc?: string,
 ): number {
   const [count, setCount] = useState(initial);
 
@@ -39,12 +44,18 @@ export function useLiveCount(
     let stopped = false;
     let timer: ReturnType<typeof setInterval> | undefined;
     let failures = 0;
+    // Отсчитываем от серверного значения, а не от нуля: иначе первый же ответ
+    // выглядел бы как рост и звонил бы на пустом месте. Компонент пересоздаётся
+    // по key, когда сервер пересчитал счётчик, так что эта метка всегда свежая.
+    let previous = initial;
 
     async function tick() {
       try {
         const next = await load();
         if (stopped) return;
         failures = 0;
+        if (soundSrc && next > previous) playNotifySound(soundSrc);
+        previous = next;
         setCount(next);
       } catch {
         // Сеть моргнула или сессия истекла — молча ждём следующего тика.
@@ -90,7 +101,7 @@ export function useLiveCount(
       stop();
       document.removeEventListener("visibilitychange", onVisibilityChange);
     };
-  }, [load]);
+  }, [load, initial, soundSrc]);
 
   return count;
 }

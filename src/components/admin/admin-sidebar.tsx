@@ -44,7 +44,12 @@ function SidebarBody({
         </span>
       </Link>
 
+      {/* key={unread}: сервер пересчитал счётчик (прочитали уведомление →
+          revalidate) — пересоздаём навигацию с новым начальным значением.
+          Без этого бейдж висел бы до следующего тика опроса. Синхронизировать
+          состояние эффектом нельзя — правило React 19 set-state-in-effect. */}
       <AdminNav
+        key={unread}
         unread={unread}
         unansweredReviews={unansweredReviews}
         onNavigate={onNavigate}

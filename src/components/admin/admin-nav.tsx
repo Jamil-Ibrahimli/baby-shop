@@ -19,6 +19,7 @@ import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 import { getShopUnreadCount } from "@/lib/notification-actions";
+import { NOTIFY_SOUND } from "@/lib/notification-sound";
 import { useLiveCount } from "@/lib/use-live-count";
 
 type NavItem = {
@@ -88,7 +89,7 @@ export function AdminNav({
   // и без этого новое уведомление появлялось только после перезагрузки.
   // Счётчик отзывов не опрашиваем — он меняется, только когда владелец сам
   // отвечает, то есть страница и так пересобирается.
-  const liveUnread = useLiveCount(unread, getShopUnreadCount);
+  const liveUnread = useLiveCount(unread, getShopUnreadCount, NOTIFY_SOUND.admin);
 
   return (
     <nav aria-label={t("label")}>
