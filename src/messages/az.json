@@ -34,7 +34,8 @@
     "loading": "Yüklənir…",
     "error": "Nə isə səhv oldu",
     "empty": "Boşdur",
-    "close": "Bağla"
+    "close": "Bağla",
+    "newTab": "yeni vərəqdə açılır"
   },
   "Catalog": {
     "title": "Kataloq",

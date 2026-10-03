@@ -2,7 +2,14 @@
 
 import { useTransition } from "react";
 import { useTranslations } from "next-intl";
-import { User, UserCircle, Bell, LayoutDashboard, LogOut } from "lucide-react";
+import {
+  User,
+  UserCircle,
+  Bell,
+  LayoutDashboard,
+  LogOut,
+  SquareArrowOutUpRight,
+} from "lucide-react";
 import { Link, useRouter } from "@/i18n/navigation";
 import { logoutAction } from "@/lib/auth-actions";
 import {
@@ -51,10 +58,22 @@ export function AccountMenu({
           <Bell className="size-4" aria-hidden />
           {t("Notifications.title")}
         </DropdownMenuItem>
+        {/* Админка открывается в НОВОЙ вкладке: витрина и панель нужны владельцу
+            одновременно — посмотрел заказ в панели, проверил, как товар выглядит
+            покупателю, вернулся. В одной вкладке это постоянная беготня назад.
+            Значок и скрытая подпись предупреждают о новой вкладке заранее:
+            неожиданный переход сбивает, особенно со скринридером. */}
         {isAdmin && (
-          <DropdownMenuItem render={<Link href="/admin" />}>
+          <DropdownMenuItem
+            render={<Link href="/admin" target="_blank" rel="noopener" />}
+          >
             <LayoutDashboard className="size-4" aria-hidden />
             {t("Admin.title")}
+            <span className="sr-only"> — {t("Common.newTab")}</span>
+            <SquareArrowOutUpRight
+              className="ml-auto size-3.5 text-muted-foreground"
+              aria-hidden
+            />
           </DropdownMenuItem>
         )}
         <DropdownMenuSeparator />
