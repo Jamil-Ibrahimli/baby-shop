@@ -24,13 +24,13 @@ export async function SiteHeader() {
     : 0;
 
   return (
-    // Шапка отделяется от контента ЦВЕТОМ, а не линией: берёт мягкую тёплую
-    // подложку surface поверх молочного фона страницы. Нижней границы нет
+    // Шапка отделяется от контента ЦВЕТОМ, а не линией: берёт мягкую подложку
+    // surface (#F7F9F8) поверх белого фона страницы. Нижней границы нет
     // намеренно; полупрозрачность с размытием оставлена, поэтому контент под
     // шапкой просвечивает. Класс dark: оставлен на будущее — тёмная тема
-    // сейчас выключена, см. app/[locale]/layout.tsx.
+    // сейчас выключена, см. src/app/[locale]/layout.tsx.
     <header className="sticky top-0 z-40 bg-surface/80 backdrop-blur dark:bg-card/85">
-      <div className="mx-auto flex h-14 w-full max-w-site items-center gap-4 px-4 sm:px-6">
+      <div className="mx-auto flex h-14 w-full max-w-6xl items-center gap-4 px-4 sm:px-6">
         <Link href="/" aria-label={t("home")} className="shrink-0">
           <Logo />
         </Link>

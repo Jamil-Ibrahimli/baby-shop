@@ -61,7 +61,7 @@ export default async function CatalogPage({
   const suspenseKey = JSON.stringify(filters);
 
   return (
-    <main className="mx-auto w-full max-w-site flex-1 px-4 py-6 sm:px-6">
+    <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6">
       {/* Хлебные крошки */}
       <nav
         aria-label="breadcrumb"

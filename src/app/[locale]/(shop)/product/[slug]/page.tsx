@@ -48,7 +48,7 @@ export default async function ProductPage({ params }: PageParams) {
   const t = await getTranslations("Product");
 
   return (
-    <main className="mx-auto w-full max-w-site flex-1 px-4 py-6 sm:px-6 sm:py-8">
+    <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 sm:py-8">
       <Link
         href="/catalog"
         className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"

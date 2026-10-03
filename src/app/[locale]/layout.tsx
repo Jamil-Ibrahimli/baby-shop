@@ -1,28 +1,19 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { Rubik, Nunito } from "next/font/google";
+import { Inter, Nunito } from "next/font/google";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
 import { routing, type Locale } from "@/i18n/routing";
 import { brand, brandThemeCss } from "@/config/brand";
 import "../globals.css";
 
-// Основной шрифт из макета «Яркий и живой».
 // Кириллица (ru) + расширенная латиница (az: ə, ğ, ş, ...) + латиница.
-const rubik = Rubik({
+const inter = Inter({
   subsets: ["latin", "latin-ext", "cyrillic"],
   variable: "--font-sans",
 });
 
-/**
- * Заголовки и логотип.
- *
- * В макете стоял Baloo 2, но у него НЕТ кириллицы (проверено по данным
- * next/font: devanagari, latin, latin-ext, vietnamese) — русские заголовки
- * молча падали бы в системный шрифт, и именно им они нарисованы на холсте.
- * Nunito — ближайший по характеру из шрифтов с кириллицей: такой же
- * округлый и дружелюбный, с тяжёлыми начертаниями.
- */
+// Дружелюбный округлый шрифт для заголовков и логотипа (поддерживает ru + az).
 const nunito = Nunito({
   subsets: ["latin", "latin-ext", "cyrillic"],
   weight: ["600", "700", "800"],
@@ -66,7 +57,7 @@ export default async function LocaleLayout({
   return (
     <html
       lang={locale}
-      className={`${rubik.variable} ${nunito.variable} h-full antialiased`}
+      className={`${inter.variable} ${nunito.variable} h-full antialiased`}
     >
       {/* Обе палитры бренда (:root и .dark) из config/brand.ts. Раньше цвета
           вешались инлайн-стилем на <html>, но инлайн сильнее любого селектора и
