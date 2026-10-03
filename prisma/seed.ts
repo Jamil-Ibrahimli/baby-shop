@@ -2,8 +2,8 @@
 // Запуск: `npm run seed`. Идемпотентно — чистит таблицы и создаёт заново.
 import "dotenv/config";
 import bcrypt from "bcryptjs";
-import { prisma } from "../lib/prisma";
-import { SIZE_TABLE, type SizeCode } from "../lib/constants";
+import { prisma } from "../src/lib/prisma";
+import { SIZE_TABLE, type SizeCode } from "../src/lib/constants";
 
 // Цены — в минорных единицах (qəpik). 1990 => 19.90 AZN.
 type ColorSpec = { ru: string; az: string; hex: string };

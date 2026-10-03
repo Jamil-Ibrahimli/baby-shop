@@ -13,7 +13,7 @@ const nextConfig: NextConfig = {
   },
 };
 
-// Плагин next-intl подключает конфиг запроса (i18n/request.ts).
-const withNextIntl = createNextIntlPlugin("./i18n/request.ts");
+// Плагин next-intl подключает конфиг запроса (src/i18n/request.ts).
+const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
 export default withNextIntl(nextConfig);

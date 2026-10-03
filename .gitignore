@@ -46,7 +46,7 @@ yarn-error.log*
 next-env.d.ts
 
 # Prisma generated client
-/lib/generated/prisma
+/src/lib/generated/prisma
 
 # Остатки прежней локальной SQLite-базы (проект перешёл на Postgres/Supabase)
 /prisma/*.db

@@ -4,7 +4,7 @@
 // Migrate ходит по DIRECT_URL (прямое подключение к Supabase, порт 5432), а НЕ по
 // пулеру из DATABASE_URL: в transaction-режиме пулер не даёт держать advisory-лок
 // и корректно применять DDL, и миграция падает или встаёт. Рантайм наоборот идёт
-// через пулер — см. lib/prisma.ts.
+// через пулер — см. src/lib/prisma.ts.
 import "dotenv/config";
 import { defineConfig } from "prisma/config";
 

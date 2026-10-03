@@ -13,7 +13,7 @@
 // ограничено и приемлемо. Добавление 3-го языка потребует миграции — осознанный компромисс.
 //
 // ПЕРЕЧИСЛЕНИЯ (enum): роли/статусы — это String с задокументированным набором значений,
-// а допустимые значения продублированы TypeScript-константами в lib/constants.ts (единый
+// а допустимые значения продублированы TypeScript-константами в src/lib/constants.ts (единый
 // источник правды в коде). Исторически так вышло из-за SQLite (там enum не поддерживался);
 // на PostgreSQL их МОЖНО перевести в настоящие enum, но осознанно не делаем: проверка и так
 // централизована в коде, а добавление статуса стало бы миграцией вместо правки константы.
@@ -24,7 +24,7 @@
 
 generator client {
   provider = "prisma-client"
-  output   = "../lib/generated/prisma"
+  output   = "../src/lib/generated/prisma"
 }
 
 datasource db {
@@ -330,7 +330,7 @@ model OrderStatusHistory {
   orderId String
   order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
-  status String // одно из ORDER_STATUSES (lib/constants.ts)
+  status String // одно из ORDER_STATUSES (src/lib/constants.ts)
   note   String? // необязательный комментарий администратора
 
   // Кто сменил (админ). Снапшот на случай удаления пользователя.
