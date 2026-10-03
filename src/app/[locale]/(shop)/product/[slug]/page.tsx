@@ -12,6 +12,7 @@ import { ColorSelectionProvider } from "@/components/product/color-selection";
 import { SizeGuideDialog } from "@/components/product/size-guide-dialog";
 import { ProductDetails } from "@/components/product/product-details";
 import { BundleContents } from "@/components/product/bundle-contents";
+import { StickyBuyPanel } from "@/components/product/sticky-buy-panel";
 import { ProductReviews } from "@/components/product/product-reviews";
 import { ScrollToHash } from "@/components/scroll-to-hash";
 import { ProductSkeleton } from "@/components/product/product-skeleton";
@@ -73,15 +74,17 @@ async function ProductContent({
 
   return (
     <>
-      {/* Широкий экран: две независимые области прокрутки — слева фото и отзывы,
-          справа покупка. Колесо над одной половиной другую не двигает
-          (overscroll-contain), полосы прокрутки скрыты.
+      {/* Широкий экран: слева фото и отзывы листаются вместе со страницей,
+          справа покупка ЕДЕТ С НИМИ, пока не покажется её низ, и дальше стоит
+          (см. StickyBuyPanel). Раньше тут были две независимые области
+          прокрутки: колесо над одной половиной другую не двигало — от этого
+          отказались, правая половина должна подниматься вместе с левой.
           Телефон: колонка одна, поэтому левая обёртка становится «прозрачной»
           (display:contents) — её дети встают в общую сетку, и порядок задаётся
           order-*: фото → покупка → отзывы. */}
       <ColorSelectionProvider>
         <div className="grid gap-8 lg:grid-cols-2 lg:items-start">
-          <div className="contents lg:block lg:max-h-[calc(100dvh-8rem)] lg:overflow-y-auto lg:overscroll-contain lg:pr-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="contents lg:block">
             <div className="order-1">
               <ProductGallery images={product.images} />
             </div>
@@ -100,7 +103,7 @@ async function ProductContent({
             </div>
           </div>
 
-          <div className="order-2 flex flex-col gap-6 lg:max-h-[calc(100dvh-8rem)] lg:overflow-y-auto lg:overscroll-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <StickyBuyPanel className="order-2 flex flex-col gap-6">
             <div>
               {product.categoryName && (
                 <p className="text-sm text-muted-foreground">
@@ -124,7 +127,7 @@ async function ProductContent({
             <BundleContents items={product.bundleItems} />
 
             <ProductDetails product={product} />
-          </div>
+          </StickyBuyPanel>
         </div>
       </ColorSelectionProvider>
     </>
