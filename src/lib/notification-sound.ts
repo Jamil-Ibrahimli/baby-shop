@@ -59,3 +59,39 @@ export function playNotifySound(src: string): void {
     // Старый браузер без Audio или заблокированный автоплей — звук не главное.
   }
 }
+
+/** Пауза между звуками в очереди. */
+const GAP_MS = 3000;
+
+/** Отложенный звук очереди — чтобы новую очередь не наслоить на старую. */
+let queued: ReturnType<typeof setTimeout> | undefined;
+
+/**
+ * Проиграть несколько звуков ПО ОЧЕРЕДИ, с паузой между ними.
+ *
+ * Нужно, когда за один тик опроса пришли разные события: заказ и отзыв.
+ * Проигрывать их одновременно нельзя — услышится каша, из которой не понять,
+ * что пришло. Поэтому строго один за другим.
+ *
+ * Новая очередь отменяет недоигранную старую: если события посыпались,
+ * последнее важнее, чем хвост предыдущего.
+ */
+export function playNotifySounds(sources: readonly string[]): void {
+  if (queued !== undefined) {
+    clearTimeout(queued);
+    queued = undefined;
+  }
+  if (sources.length === 0) return;
+
+  const playFrom = (index: number): void => {
+    playNotifySound(sources[index]);
+    const next = index + 1;
+    if (next >= sources.length) return;
+    queued = setTimeout(() => {
+      queued = undefined;
+      playFrom(next);
+    }, GAP_MS);
+  };
+
+  playFrom(0);
+}

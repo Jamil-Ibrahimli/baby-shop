@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { AdminUnreadCounts } from "@/lib/notifications";
-import { NOTIFY_SOUND, playNotifySound } from "@/lib/notification-sound";
+import { NOTIFY_SOUND, playNotifySounds } from "@/lib/notification-sound";
 
 /**
  * Как часто спрашиваем сервер — одно число на весь проект, и активная вкладка
@@ -21,20 +21,23 @@ export const LIVE_COUNT_INTERVAL_MS = 30_000;
 /** Сколько неудач подряд терпим, прежде чем остановить опрос. */
 const MAX_FAILURES = 3;
 
-/** Что проигрывать, если счётчики выросли. `null` — молчать. */
-type SoundPicker<T> = (next: T, previous: T) => string | null;
+/**
+ * Что проигрывать, если счётчики выросли. Список, а не один звук: за тик может
+ * прийти и заказ, и отзыв, и тогда звучат оба по очереди. Пустой — молчать.
+ */
+type SoundPicker<T> = (next: T, previous: T) => readonly string[];
 
 /**
  * Покупателю сигнал один на все случаи: уведомления приходят ему редко,
  * различать их на слух незачем.
  */
 export const customerSound: SoundPicker<number> = (next, previous) =>
-  next > previous ? NOTIFY_SOUND.notify : null;
+  next > previous ? [NOTIFY_SOUND.notify] : [];
 
 /**
- * Владельцу — два разных сигнала. За один тик звучит ТОЛЬКО ОДИН: если пришёл
- * и заказ, и отзыв, побеждает заказ (деньги важнее). Второе событие остаётся
- * без звука — его видно по счётчику.
+ * Владельцу — два разных сигнала, и если за тик пришло и то и другое, звучат
+ * ОБА по очереди (пауза задаётся в notification-sound). Заказ первым: деньги
+ * важнее, и если человек отвлечётся после первого звука, услышит главное.
  *
  * Категории сравниваются ПО ОТДЕЛЬНОСТИ, а не по общему числу. Иначе чтение
  * гасило бы приход: было «всего 2, заказов 2», владелец прочитал один заказ и
@@ -42,11 +45,12 @@ export const customerSound: SoundPicker<number> = (next, previous) =>
  * общее не выросло, и отзыв прошёл бы молча.
  */
 export const shopSound: SoundPicker<AdminUnreadCounts> = (next, previous) => {
-  if (next.orders > previous.orders) return NOTIFY_SOUND.order;
+  const sounds: string[] = [];
+  if (next.orders > previous.orders) sounds.push(NOTIFY_SOUND.order);
   const nextOther = next.total - next.orders;
   const previousOther = previous.total - previous.orders;
-  if (nextOther > previousOther) return NOTIFY_SOUND.notify;
-  return null;
+  if (nextOther > previousOther) sounds.push(NOTIFY_SOUND.notify);
+  return sounds;
 };
 
 /**
@@ -90,8 +94,7 @@ function useLivePoll<T>(
         const next = await load();
         if (stopped) return;
         failures = 0;
-        const sound = soundFor(next, previous);
-        if (sound) playNotifySound(sound);
+        playNotifySounds(soundFor(next, previous));
         previous = next;
         setValue(next);
       } catch {
