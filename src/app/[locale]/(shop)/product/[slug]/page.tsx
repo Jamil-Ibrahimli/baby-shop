@@ -1,13 +1,11 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
-import { setRequestLocale, getTranslations } from "next-intl/server";
+import { setRequestLocale } from "next-intl/server";
 import { hasLocale } from "next-intl";
-import { ChevronLeft } from "lucide-react";
 import { routing, type Locale } from "@/i18n/routing";
 import { getProductBySlug, productExists } from "@/lib/product";
 import { getCartQuantitiesByVariant } from "@/lib/cart";
-import { Link } from "@/i18n/navigation";
 import { ProductGallery } from "@/components/product/product-gallery";
 import { ProductVariantSelector } from "@/components/product/product-variant-selector";
 import { ColorSelectionProvider } from "@/components/product/color-selection";
@@ -46,18 +44,8 @@ export default async function ProductPage({ params }: PageParams) {
   // Проверка существования ДО стриминга — гарантирует корректный HTTP 404.
   if (!(await productExists(slug))) notFound();
 
-  const t = await getTranslations("Product");
-
   return (
     <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 sm:py-8">
-      <Link
-        href="/catalog"
-        className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
-      >
-        <ChevronLeft className="size-4" aria-hidden />
-        {t("backToCatalog")}
-      </Link>
-
       {/* Данные грузятся внутри Suspense → скелетон при переходе. */}
       <Suspense fallback={<ProductSkeleton />}>
         <ProductContent slug={slug} locale={loc} />
@@ -93,7 +81,7 @@ async function ProductContent({
           order-*: фото → покупка → отзывы. */}
       <ColorSelectionProvider>
         <div className="grid gap-8 lg:grid-cols-2 lg:items-start">
-          <div className="contents lg:block lg:h-[calc(100dvh-8rem)] lg:overflow-y-auto lg:overscroll-contain lg:pr-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="contents lg:block lg:max-h-[calc(100dvh-8rem)] lg:overflow-y-auto lg:overscroll-contain lg:pr-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             <div className="order-1">
               <ProductGallery images={product.images} />
             </div>
@@ -112,7 +100,7 @@ async function ProductContent({
             </div>
           </div>
 
-          <div className="order-2 flex flex-col gap-6 lg:h-[calc(100dvh-8rem)] lg:overflow-y-auto lg:overscroll-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="order-2 flex flex-col gap-6 lg:max-h-[calc(100dvh-8rem)] lg:overflow-y-auto lg:overscroll-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             <div>
               {product.categoryName && (
                 <p className="text-sm text-muted-foreground">

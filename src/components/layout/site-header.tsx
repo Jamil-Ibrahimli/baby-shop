@@ -8,6 +8,7 @@ import { auth } from "@/auth";
 import { LocaleSwitcher } from "@/components/locale-switcher";
 import { AccountMenu } from "@/components/layout/account-menu";
 import { NotificationBell } from "@/components/layout/notification-bell";
+import { HidingHeader } from "@/components/layout/hiding-header";
 
 // Шапка сайта: бренд, каталог, язык, аккаунт, «колокольчик» покупателя, корзина.
 export async function SiteHeader() {
@@ -30,7 +31,11 @@ export async function SiteHeader() {
     // намеренно; полупрозрачность с размытием оставлена, поэтому контент под
     // шапкой просвечивает. Класс dark: оставлен на будущее — тёмная тема
     // сейчас выключена, см. src/app/[locale]/layout.tsx.
-    <header className="sticky top-0 z-40 bg-surface/80 backdrop-blur dark:bg-card/85">
+    //
+    // Сам тег <header> и поведение «прячется при прокрутке вниз» — внутри
+    // HidingHeader: ему нужен клиент, а здесь серверные запросы к сессии,
+    // корзине и уведомлениям. Содержимое уходит туда через children.
+    <HidingHeader className="bg-surface/80 backdrop-blur dark:bg-card/85">
       <div className="mx-auto flex h-14 w-full max-w-6xl items-center gap-4 px-4 sm:px-6">
         <Link href="/" aria-label={t("home")} className="shrink-0">
           <Logo />
@@ -85,6 +90,6 @@ export async function SiteHeader() {
           </Link>
         </div>
       </div>
-    </header>
+    </HidingHeader>
   );
 }
