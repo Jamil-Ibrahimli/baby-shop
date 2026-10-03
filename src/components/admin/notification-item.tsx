@@ -150,13 +150,27 @@ export function NotificationItem({
         </span>
 
         <span className="min-w-0 flex-1">
-          <span className="block text-sm font-semibold">
+          {/* Прочитанное отступает на второй план: тоньше и бледнее. Новое
+              остаётся плотным и тёмным — тогда непрочитанные видно сразу, без
+              вчитывания. Состояние по-прежнему передаётся не только цветом
+              (зелёная точка на иконке + sr-only ниже), так что это безопасно. */}
+          <span
+            className={cn(
+              "block text-sm",
+              isRead ? "font-normal text-muted-foreground" : "font-semibold",
+            )}
+          >
             {title}
             {/* Зелёная точка декоративна → состояние «новое» дублируем для скринридера */}
             {!isRead && <span className="sr-only"> — {t("unreadLabel")}</span>}
           </span>
           {orderNumber && showOrderNumber && (
-            <span className="block truncate text-sm text-foreground/80">
+            <span
+              className={cn(
+                "block truncate text-sm",
+                isRead ? "text-muted-foreground" : "text-foreground/80",
+              )}
+            >
               {orderNumber}
             </span>
           )}
