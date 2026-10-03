@@ -32,12 +32,20 @@ export const customerSound: SoundPicker<number> = (next, previous) =>
   next > previous ? NOTIFY_SOUND.notify : null;
 
 /**
- * Владельцу — два разных. Заказ важнее отзыва, поэтому если за один тик
- * пришло и то и другое, звучит заказ.
+ * Владельцу — два разных сигнала. За один тик звучит ТОЛЬКО ОДИН: если пришёл
+ * и заказ, и отзыв, побеждает заказ (деньги важнее). Второе событие остаётся
+ * без звука — его видно по счётчику.
+ *
+ * Категории сравниваются ПО ОТДЕЛЬНОСТИ, а не по общему числу. Иначе чтение
+ * гасило бы приход: было «всего 2, заказов 2», владелец прочитал один заказ и
+ * в тот же тик пришёл отзыв — стало «всего 2, заказов 1». Заказы не выросли,
+ * общее не выросло, и отзыв прошёл бы молча.
  */
 export const shopSound: SoundPicker<AdminUnreadCounts> = (next, previous) => {
   if (next.orders > previous.orders) return NOTIFY_SOUND.order;
-  if (next.total > previous.total) return NOTIFY_SOUND.notify;
+  const nextOther = next.total - next.orders;
+  const previousOther = previous.total - previous.orders;
+  if (nextOther > previousOther) return NOTIFY_SOUND.notify;
   return null;
 };
 
