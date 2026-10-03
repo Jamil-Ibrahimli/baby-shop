@@ -15,9 +15,15 @@ function validate(rating: number, body: string): ReviewResult | null {
 }
 
 /**
- * Добавить отзыв. Только зарегистрированный пользователь.
- * Отзывов на товар может быть сколько угодно — каждый раз создаётся новый,
- * прежние не перезаписываются (раньше здесь был upsert по (productId, userId)).
+ * Добавить отзыв. Только зарегистрированный пользователь, и ОДИН на товар.
+ *
+ * Правило вернули 2026-10-03. Дело не в нагрузке на владельца, а в рейтинге:
+ * он считается простым средним, и один покупатель с 19 отзывами единолично
+ * определял оценку товара.
+ *
+ * Исключения для админа НЕТ. Витрина работает одинаково для всех, админом
+ * человек становится только в панели; к тому же без исключения правило удалось
+ * запереть уникальным индексом в самой базе, а не только здесь.
  */
 export async function submitReview(
   productId: string,
@@ -37,14 +43,32 @@ export async function submitReview(
   if (!product) return { error: "not_found" };
 
   const stars = Math.round(rating);
-  const created = await prisma.review.create({
-    data: {
-      productId,
-      userId: session.user.id,
-      rating: stars,
-      body: body.trim(),
-    },
-  });
+
+  let created;
+  try {
+    created = await prisma.review.create({
+      data: {
+        productId,
+        userId: session.user.id,
+        rating: stars,
+        body: body.trim(),
+      },
+    });
+  } catch (e) {
+    // P2001/P2002 — нарушение уникальности (productId, userId): отзыв уже есть.
+    // Ловим именно её, а не проверяем заранее отдельным запросом: между
+    // проверкой и вставкой человек мог отправить форму дважды, и тогда
+    // пользователь увидел бы сырую ошибку Prisma вместо понятной.
+    if (
+      typeof e === "object" &&
+      e !== null &&
+      "code" in e &&
+      (e as { code?: string }).code === "P2002"
+    ) {
+      return { error: "already_reviewed" };
+    }
+    throw e;
+  }
 
   // Уведомляем владельца — но осечка уведомления не должна ронять отзыв,
   // он уже сохранён (тот же принцип, что при оформлении заказа).
@@ -67,7 +91,14 @@ export async function submitReview(
   return {};
 }
 
-/** Изменить СВОЙ отзыв. Чужой не тронется: userId в условии обновления. */
+/**
+ * Изменить СВОЙ отзыв. Чужой не тронется: userId в условии обновления.
+ *
+ * Пока магазин не ответил — правь сколько нужно. После ответа отзыв ЗАКРЫТ:
+ * иначе ответ владельца повисал бы под переписанным текстом и отвечал бы на
+ * слова, которых больше нет. Отдельный счётчик правок для этого не нужен —
+ * достаточно того, что ответ уже существует.
+ */
 export async function updateReview(
   reviewId: string,
   rating: number,
@@ -79,12 +110,23 @@ export async function updateReview(
   const invalid = validate(rating, body);
   if (invalid) return invalid;
 
-  // updateMany с userId в where — правка чужого отзыва просто не найдёт строку.
+  // replyAt в where, а не проверка отдельным запросом: так условие «ответа нет»
+  // проверяется той же строкой, которую меняем, и гонка невозможна — владелец
+  // не сможет ответить ровно между проверкой и записью.
   const res = await prisma.review.updateMany({
-    where: { id: reviewId, userId: session.user.id },
+    where: { id: reviewId, userId: session.user.id, replyAt: null },
     data: { rating: Math.round(rating), body: body.trim() },
   });
-  if (res.count === 0) return { error: "not_found" };
+
+  if (res.count === 0) {
+    // Не нашли — либо отзыв чужой/удалён, либо на него уже ответили.
+    // Различаем, чтобы сказать человеку правду, а не общее «не найдено».
+    const locked = await prisma.review.findFirst({
+      where: { id: reviewId, userId: session.user.id, replyAt: { not: null } },
+      select: { id: true },
+    });
+    return { error: locked ? "reply_locked" : "not_found" };
+  }
 
   return {};
 }

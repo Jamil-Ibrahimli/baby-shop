@@ -82,6 +82,10 @@ export function ReviewCard({
             <time className="text-xs text-muted-foreground/70">{dateLabel}</time>
             {mine && (
               <div className="flex items-center gap-3">
+                {/* После ответа магазина отзыв закрыт для правки: иначе ответ
+                    повис бы под переписанным текстом. Удалить по-прежнему
+                    можно — отбирать право убрать своё мы не стали. */}
+                {!review.reply && (
                 <button
                   type="button"
                   onClick={() => setEditing(true)}
@@ -90,6 +94,7 @@ export function ReviewCard({
                   <Pencil className="size-3.5" aria-hidden />
                   {t("edit")}
                 </button>
+                )}
                 <button
                   type="button"
                   onClick={remove}

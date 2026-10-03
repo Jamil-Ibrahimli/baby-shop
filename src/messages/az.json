@@ -170,7 +170,9 @@
         "rating_required": "Qiymət verin",
         "body_required": "Ən azı bir neçə söz yazın",
         "unauthorized": "Rəy yazmaq üçün daxil olun",
-        "not_found": "Məhsul tapılmadı"
+        "not_found": "Məhsul tapılmadı",
+        "already_reviewed": "Siz bu məhsula artıq rəy yazmısınız",
+        "reply_locked": "Mağaza rəyə cavab verib — onu dəyişmək artıq mümkün deyil"
       },
       "published": "Rəy dərc olundu — aşağıdaki siyahıda göründü",
       "yourReview": "sizin rəyiniz",

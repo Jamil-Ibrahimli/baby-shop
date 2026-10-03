@@ -32,18 +32,21 @@ export async function ProductReviews({
   const t = await getTranslations("Product.Reviews");
   const session = await auth();
 
-  // Свои отзывы больше НЕ убираем из списка: покупатель видит опубликованное
-  // сразу после отправки. Отмечаем их, чтобы показать «Изменить» и «Удалить».
-  const myIds = session?.user
-    ? new Set(
-        (
-          await prisma.review.findMany({
-            where: { productId, userId: session.user.id },
-            select: { id: true },
-          })
-        ).map((r) => r.id),
-      )
-    : new Set<string>();
+  // Свои отзывы НЕ убираем из списка: покупатель видит опубликованное сразу
+  // после отправки. Отмечаем их, чтобы показать «Изменить» и «Удалить».
+  //
+  // Отзыв на товар теперь ОДИН, поэтому заодно узнаём, написан ли он уже:
+  // если да, форму не показываем — писать второй всё равно не дадут ни экшен,
+  // ни уникальный индекс в базе, и пустая форма только обманывала бы.
+  const myReview = session?.user
+    ? await prisma.review.findUnique({
+        where: {
+          productId_userId: { productId, userId: session.user.id },
+        },
+        select: { id: true },
+      })
+    : null;
+  const myIds = new Set(myReview ? [myReview.id] : []);
 
   const dateFmt = dateFormat(locale, { dateStyle: "long" });
 
@@ -63,9 +66,12 @@ export async function ProductReviews({
         )}
       </div>
 
-      {/* Форма для авторизованных / приглашение войти для гостя */}
+      {/* Форма для авторизованных, у кого отзыва ещё нет. Написавшему её не
+          показываем — его отзыв уже в списке ниже, там же «Изменить». */}
       {session?.user ? (
-        <ReviewForm productId={productId} />
+        myReview ? null : (
+          <ReviewForm productId={productId} />
+        )
       ) : (
         <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-dashed border-border p-4 text-sm">
           <span className="text-muted-foreground">{t("signInToReview")}</span>
