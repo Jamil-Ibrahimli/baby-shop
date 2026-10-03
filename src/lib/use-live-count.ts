@@ -11,6 +11,9 @@ import { useEffect, useState } from "react";
  */
 export const LIVE_COUNT_INTERVAL_MS = 10_000;
 
+/** Сколько неудач подряд терпим, прежде чем остановить опрос. */
+const MAX_FAILURES = 3;
+
 /**
  * Держит счётчик свежим опросом сервера.
  *
@@ -35,14 +38,25 @@ export function useLiveCount(
   useEffect(() => {
     let stopped = false;
     let timer: ReturnType<typeof setInterval> | undefined;
+    let failures = 0;
 
     async function tick() {
       try {
         const next = await load();
-        if (!stopped) setCount(next);
+        if (stopped) return;
+        failures = 0;
+        setCount(next);
       } catch {
         // Сеть моргнула или сессия истекла — молча ждём следующего тика.
         // Ронять шапку из-за счётчика нельзя.
+        //
+        // Но если не отвечает раз за разом, опрос ОСТАНАВЛИВАЕМ. Вкладка может
+        // остаться открытой на мёртвой сборке (в разработке — после
+        // перезапуска сервера) или на отвалившейся сессии, и тогда она будет
+        // долбить сервер вечно. Попробуем снова, когда человек вернётся на
+        // вкладку: visibilitychange ниже всё перезапустит.
+        failures += 1;
+        if (failures >= MAX_FAILURES) stop();
       }
     }
 
@@ -58,6 +72,9 @@ export function useLiveCount(
 
     function onVisibilityChange() {
       if (document.visibilityState === "visible") {
+        // Вернулись на вкладку — даём опросу второй шанс, даже если он
+        // остановился из-за ошибок: сервер мог уже подняться.
+        failures = 0;
         void tick();
         start();
       } else {
