@@ -60,6 +60,69 @@ export function playNotifySound(src: string): void {
   }
 }
 
+/** Уже снимали запрет в этой вкладке? Повторять незачем. */
+let unlocked = false;
+
+/**
+ * Снять запрет браузера на звук, использовав первое касание страницы.
+ *
+ * Правило браузера: пока человек не взаимодействовал С ЭТОЙ вкладкой, вызов
+ * play() отклоняется. Вкладку, открытую по ссылке, «тронутой» не считают —
+ * поэтому свежая вкладка админки молчала, даже когда уведомления приходили.
+ *
+ * Обойти правило нельзя, но можно им воспользоваться: в момент первого клика
+ * право на звук есть, и мы тратим его на то, чтобы проиграть файлы с нулевой
+ * громкостью и тут же остановить. После этого браузер считает их
+ * «разрешёнными», и настоящий звук сработает позже сам, без участия человека.
+ *
+ * Прогоняем ОБА файла: в Safari на iPhone разрешение выдаётся каждому
+ * элементу отдельно, одного общего касания документа там мало.
+ */
+function unlock(): void {
+  if (unlocked) return;
+  unlocked = true;
+
+  for (const src of Object.values(NOTIFY_SOUND)) {
+    try {
+      const audio = getPlayer(src);
+      audio.volume = 0;
+      void audio
+        .play()
+        .then(() => {
+          audio.pause();
+          audio.currentTime = 0;
+        })
+        .catch(() => {})
+        .finally(() => {
+          audio.volume = VOLUME;
+        });
+    } catch {
+      // Нет Audio — звук не главное, молчим.
+    }
+  }
+}
+
+/** События, которые браузер считает взаимодействием. */
+const UNLOCK_EVENTS = ["pointerdown", "keydown", "touchstart"] as const;
+
+/**
+ * Подписаться на первое касание страницы, чтобы снять запрет на звук.
+ * Возвращает отписку. Повторные вызовы безвредны: unlock() срабатывает один раз.
+ */
+export function armNotifySound(): () => void {
+  if (unlocked) return () => {};
+
+  const handler = () => unlock();
+  for (const type of UNLOCK_EVENTS) {
+    window.addEventListener(type, handler, { once: true, passive: true });
+  }
+  return () => {
+    for (const type of UNLOCK_EVENTS) {
+      window.removeEventListener(type, handler);
+    }
+  };
+}
+
 /** Пауза между звуками в очереди. */
 const GAP_MS = 3000;
 

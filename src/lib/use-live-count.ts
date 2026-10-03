@@ -2,7 +2,11 @@
 
 import { useEffect, useState } from "react";
 import type { AdminUnreadCounts } from "@/lib/notifications";
-import { NOTIFY_SOUND, playNotifySounds } from "@/lib/notification-sound";
+import {
+  armNotifySound,
+  NOTIFY_SOUND,
+  playNotifySounds,
+} from "@/lib/notification-sound";
 
 /**
  * Как часто спрашиваем сервер — одно число на весь проект, и активная вкладка
@@ -16,7 +20,7 @@ import { NOTIFY_SOUND, playNotifySounds } from "@/lib/notification-sound";
  * вкладках (Chrome со временем урезает их примерно до раза в минуту). Так что
  * в фоне задержка будет больше заявленной, сколько сюда ни пиши.
  */
-export const LIVE_COUNT_INTERVAL_MS = 30_000;
+export const LIVE_COUNT_INTERVAL_MS = 15_000;
 
 /** Сколько неудач подряд терпим, прежде чем остановить опрос. */
 const MAX_FAILURES = 3;
@@ -133,10 +137,15 @@ function useLivePoll<T>(
 
     start();
     document.addEventListener("visibilitychange", onVisibilityChange);
+    // Ждём первого касания страницы, чтобы заранее снять запрет браузера на
+    // звук. Иначе вкладка, в которой человек ни разу не кликнул, молчит —
+    // а это как раз обычный случай: открыл панель по ссылке и оставил.
+    const disarm = armNotifySound();
 
     return () => {
       stopped = true;
       stop();
+      disarm();
       document.removeEventListener("visibilitychange", onVisibilityChange);
     };
     // initial намеренно НЕ в зависимостях — вместо него примитивы из initialKeys.
