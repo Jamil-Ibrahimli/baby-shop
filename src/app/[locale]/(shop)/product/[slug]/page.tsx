@@ -15,6 +15,7 @@ import { SizeGuideDialog } from "@/components/product/size-guide-dialog";
 import { ProductDetails } from "@/components/product/product-details";
 import { BundleContents } from "@/components/product/bundle-contents";
 import { ProductReviews } from "@/components/product/product-reviews";
+import { ScrollToHash } from "@/components/scroll-to-hash";
 import { ProductSkeleton } from "@/components/product/product-skeleton";
 
 type PageParams = { params: Promise<{ locale: string; slug: string }> };
@@ -98,6 +99,9 @@ async function ProductContent({
             </div>
 
             <div className="order-3 lg:mt-8">
+              {/* Доезжаем до отзыва из уведомления — здесь, ВНУТРИ готового
+                  содержимого: снаружи Suspense элемента ещё нет. */}
+              <ScrollToHash />
               <ProductReviews
                 productId={product.id}
                 reviews={product.reviews}

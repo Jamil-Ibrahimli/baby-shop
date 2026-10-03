@@ -5,6 +5,7 @@ import { routing, type Locale } from "@/i18n/routing";
 import { Link } from "@/i18n/navigation";
 import { dateFormat } from "@/lib/format";
 import { getAdminReviews } from "@/lib/admin/reviews";
+import { ScrollToHash } from "@/components/scroll-to-hash";
 import {
   ReviewManager,
   type ReviewRow,
@@ -78,6 +79,8 @@ export default async function AdminReviewsPage({
         )}
       </div>
 
+      {/* Доезжаем до отзыва из уведомления и подсвечиваем его. */}
+      <ScrollToHash />
       <ReviewManager reviews={rows} />
     </main>
   );
