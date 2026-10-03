@@ -19,11 +19,13 @@ type AdminUser = { name: string; email: string | null };
 // Одно и то же и на десктопе (постоянный сайдбар), и в мобильном меню (sheet).
 function SidebarBody({
   unread,
+  unreadOrders,
   unansweredReviews,
   user,
   onNavigate,
 }: {
   unread: number;
+  unreadOrders: number;
   unansweredReviews: number;
   user: AdminUser;
   onNavigate?: () => void;
@@ -51,6 +53,7 @@ function SidebarBody({
       <AdminNav
         key={unread}
         unread={unread}
+        unreadOrders={unreadOrders}
         unansweredReviews={unansweredReviews}
         onNavigate={onNavigate}
       />
@@ -75,10 +78,12 @@ function SidebarBody({
 // Постоянный сайдбар (десктоп).
 export function AdminSidebar({
   unread,
+  unreadOrders,
   unansweredReviews,
   user,
 }: {
   unread: number;
+  unreadOrders: number;
   unansweredReviews: number;
   user: AdminUser;
 }) {
@@ -86,6 +91,7 @@ export function AdminSidebar({
     <aside className="sticky top-0 hidden h-svh w-64 shrink-0 border-r border-border bg-card lg:block">
       <SidebarBody
         unread={unread}
+        unreadOrders={unreadOrders}
         unansweredReviews={unansweredReviews}
         user={user}
       />
@@ -96,10 +102,12 @@ export function AdminSidebar({
 // Мобильная шапка админки: кнопка меню (открывает тот же сайдбар в sheet) + логотип.
 export function AdminMobileBar({
   unread,
+  unreadOrders,
   unansweredReviews,
   user,
 }: {
   unread: number;
+  unreadOrders: number;
   unansweredReviews: number;
   user: AdminUser;
 }) {
@@ -124,6 +132,7 @@ export function AdminMobileBar({
         <SheetContent side="left" className="w-72 gap-0 p-0">
           <SidebarBody
             unread={unread}
+            unreadOrders={unreadOrders}
             unansweredReviews={unansweredReviews}
             user={user}
             onNavigate={() => setOpen(false)}

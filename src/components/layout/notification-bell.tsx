@@ -3,7 +3,6 @@
 import { Bell } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { getMyUnreadCount } from "@/lib/notification-actions";
-import { NOTIFY_SOUND } from "@/lib/notification-sound";
 import { useLiveCount } from "@/lib/use-live-count";
 
 /**
@@ -21,11 +20,7 @@ export function NotificationBell({
   /** Локализованная подпись — переводы живут на сервере, сюда приходят готовыми. */
   label: string;
 }) {
-  const count = useLiveCount(
-    initialCount,
-    getMyUnreadCount,
-    NOTIFY_SOUND.customer,
-  );
+  const count = useLiveCount(initialCount, getMyUnreadCount);
 
   return (
     <Link

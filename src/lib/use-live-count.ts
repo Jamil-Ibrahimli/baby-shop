@@ -1,19 +1,45 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { playNotifySound } from "@/lib/notification-sound";
+import type { AdminUnreadCounts } from "@/lib/notifications";
+import { NOTIFY_SOUND, playNotifySound } from "@/lib/notification-sound";
 
 /**
- * Как часто спрашиваем сервер. Десять секунд — компромисс: колокольчик
- * ощущается живым, но мы не платим за вызов функции и запрос к базе каждую
- * секунду ради цифры, на которую смотрят раз в час. Опрашивают только вошедшие
- * пользователи (у гостя колокольчика нет), поэтому нагрузка маленькая.
- * Менять интервал — здесь, одно число на весь проект.
+ * Как часто спрашиваем сервер — одно число на весь проект, и активная вкладка
+ * от фоновой не отличается.
+ *
+ * Тридцать секунд, а не десять: опрос идёт в том числе в фоне, иначе звук
+ * нового заказа не догнал бы владельца, пока он в другой вкладке, — а звук
+ * ровно для этого и нужен.
+ *
+ * Оговорка, которую не обойти: браузеры сами душат таймеры в спрятанных
+ * вкладках (Chrome со временем урезает их примерно до раза в минуту). Так что
+ * в фоне задержка будет больше заявленной, сколько сюда ни пиши.
  */
-export const LIVE_COUNT_INTERVAL_MS = 10_000;
+export const LIVE_COUNT_INTERVAL_MS = 30_000;
 
 /** Сколько неудач подряд терпим, прежде чем остановить опрос. */
 const MAX_FAILURES = 3;
+
+/** Что проигрывать, если счётчики выросли. `null` — молчать. */
+type SoundPicker<T> = (next: T, previous: T) => string | null;
+
+/**
+ * Покупателю сигнал один на все случаи: уведомления приходят ему редко,
+ * различать их на слух незачем.
+ */
+export const customerSound: SoundPicker<number> = (next, previous) =>
+  next > previous ? NOTIFY_SOUND.notify : null;
+
+/**
+ * Владельцу — два разных. Заказ важнее отзыва, поэтому если за один тик
+ * пришло и то и другое, звучит заказ.
+ */
+export const shopSound: SoundPicker<AdminUnreadCounts> = (next, previous) => {
+  if (next.orders > previous.orders) return NOTIFY_SOUND.order;
+  if (next.total > previous.total) return NOTIFY_SOUND.notify;
+  return null;
+};
 
 /**
  * Держит счётчик свежим опросом сервера.
@@ -21,32 +47,34 @@ const MAX_FAILURES = 3;
  * Зачем вообще: счётчики считаются в серверных компонентах при сборке
  * страницы, поэтому до перезагрузки цифра не менялась.
  *
- * Опрос ЗАСЫПАЕТ, когда вкладка неактивна, и будится при возврате — там же
- * сразу делается внеочередной запрос, чтобы человек не ждал целый интервал.
- * Это экономит почти всё: вкладка магазина обычно висит в фоне часами.
+ * Опрос идёт и в фоне — иначе звук не дошёл бы до человека, пока он в другой
+ * вкладке. При возврате на вкладку делается внеочередной запрос: браузер мог
+ * придушить таймер, и значение успело устареть.
  *
- * @param initial   значение, посчитанное на сервере (показываем до первого ответа)
- * @param load      серверный экшен; ССЫЛКА ДОЛЖНА БЫТЬ СТАБИЛЬНОЙ — передавайте
- *                  импортированный экшен, а не стрелку, объявленную в рендере,
- *                  иначе эффект будет перезапускаться на каждый рендер.
- * @param soundSrc  звук, которым сообщаем о НОВОМ уведомлении (путь из
- *                  NOTIFY_SOUND). Звучит, только когда счётчик ВЫРОС: не при
- *                  первом ответе, не когда человек прочитал и число упало.
+ * @param initial  значение с сервера; РАСКЛАДЫВАЙТЕ НА ПРИМИТИВЫ в сигнатуре
+ *                 вызывающего хука — объект, собранный в рендере, менял бы
+ *                 ссылку каждый раз и перезапускал эффект.
+ * @param load     серверный экшен; ссылка должна быть стабильной (импортируйте
+ *                 экшен, не объявляйте стрелку в рендере).
+ * @param soundFor чистая функция уровня модуля: по старому и новому значению
+ *                 решает, что проиграть.
  */
-export function useLiveCount(
-  initial: number,
-  load: () => Promise<number>,
-  soundSrc?: string,
-): number {
-  const [count, setCount] = useState(initial);
+function useLivePoll<T>(
+  initial: T,
+  load: () => Promise<T>,
+  soundFor: SoundPicker<T>,
+  // Зависимости эффекта — только примитивы из initial. Передаются отдельно,
+  // потому что сам initial может быть объектом с новой ссылкой на каждый рендер.
+  initialKeys: readonly unknown[],
+): T {
+  const [value, setValue] = useState(initial);
 
   useEffect(() => {
     let stopped = false;
     let timer: ReturnType<typeof setInterval> | undefined;
     let failures = 0;
     // Отсчитываем от серверного значения, а не от нуля: иначе первый же ответ
-    // выглядел бы как рост и звонил бы на пустом месте. Компонент пересоздаётся
-    // по key, когда сервер пересчитал счётчик, так что эта метка всегда свежая.
+    // выглядел бы как рост и звонил бы на пустом месте.
     let previous = initial;
 
     async function tick() {
@@ -54,9 +82,10 @@ export function useLiveCount(
         const next = await load();
         if (stopped) return;
         failures = 0;
-        if (soundSrc && next > previous) playNotifySound(soundSrc);
+        const sound = soundFor(next, previous);
+        if (sound) playNotifySound(sound);
         previous = next;
-        setCount(next);
+        setValue(next);
       } catch {
         // Сеть моргнула или сессия истекла — молча ждём следующего тика.
         // Ронять шапку из-за счётчика нельзя.
@@ -65,14 +94,14 @@ export function useLiveCount(
         // остаться открытой на мёртвой сборке (в разработке — после
         // перезапуска сервера) или на отвалившейся сессии, и тогда она будет
         // долбить сервер вечно. Попробуем снова, когда человек вернётся на
-        // вкладку: visibilitychange ниже всё перезапустит.
+        // вкладку.
         failures += 1;
         if (failures >= MAX_FAILURES) stop();
       }
     }
 
     function start() {
-      timer ??= setInterval(tick, LIVE_COUNT_INTERVAL_MS);
+      timer ??= setInterval(() => void tick(), LIVE_COUNT_INTERVAL_MS);
     }
 
     function stop() {
@@ -82,18 +111,16 @@ export function useLiveCount(
     }
 
     function onVisibilityChange() {
-      if (document.visibilityState === "visible") {
-        // Вернулись на вкладку — даём опросу второй шанс, даже если он
-        // остановился из-за ошибок: сервер мог уже подняться.
-        failures = 0;
-        void tick();
-        start();
-      } else {
-        stop();
-      }
+      if (document.visibilityState !== "visible") return;
+      // Вернулись на вкладку: догоняем значение сразу (в фоне браузер мог
+      // придушить таймер) и даём опросу второй шанс, если он остановился
+      // из-за ошибок — сервер мог уже подняться.
+      failures = 0;
+      void tick();
+      start();
     }
 
-    if (document.visibilityState === "visible") start();
+    start();
     document.addEventListener("visibilitychange", onVisibilityChange);
 
     return () => {
@@ -101,7 +128,31 @@ export function useLiveCount(
       stop();
       document.removeEventListener("visibilitychange", onVisibilityChange);
     };
-  }, [load, initial, soundSrc]);
+    // initial намеренно НЕ в зависимостях — вместо него примитивы из initialKeys.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [load, soundFor, ...initialKeys]);
 
-  return count;
+  return value;
+}
+
+/** Непрочитанные покупателя. Возвращает число. */
+export function useLiveCount(
+  initial: number,
+  load: () => Promise<number>,
+): number {
+  return useLivePoll(initial, load, customerSound, [initial]);
+}
+
+/** Непрочитанные магазина с разбивкой. Возвращает общее число. */
+export function useLiveShopCount(
+  initialTotal: number,
+  initialOrders: number,
+  load: () => Promise<AdminUnreadCounts>,
+): number {
+  return useLivePoll(
+    { total: initialTotal, orders: initialOrders },
+    load,
+    shopSound,
+    [initialTotal, initialOrders],
+  ).total;
 }

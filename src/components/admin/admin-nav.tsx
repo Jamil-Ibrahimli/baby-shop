@@ -18,9 +18,8 @@ import {
 import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
-import { getShopUnreadCount } from "@/lib/notification-actions";
-import { NOTIFY_SOUND } from "@/lib/notification-sound";
-import { useLiveCount } from "@/lib/use-live-count";
+import { getShopUnreadCounts } from "@/lib/notification-actions";
+import { useLiveShopCount } from "@/lib/use-live-count";
 
 type NavItem = {
   href: string;
@@ -73,10 +72,13 @@ function isActive(pathname: string, href: string): boolean {
 
 export function AdminNav({
   unread,
+  unreadOrders,
   unansweredReviews,
   onNavigate,
 }: {
   unread: number;
+  /** Из них о новых заказах — нужно, чтобы выбрать звук. */
+  unreadOrders: number;
   /** Отзывы без ответа — «сколько работы», а не «сколько непрочитанного». */
   unansweredReviews: number;
   /** Закрыть мобильное меню после перехода. */
@@ -89,7 +91,11 @@ export function AdminNav({
   // и без этого новое уведомление появлялось только после перезагрузки.
   // Счётчик отзывов не опрашиваем — он меняется, только когда владелец сам
   // отвечает, то есть страница и так пересобирается.
-  const liveUnread = useLiveCount(unread, getShopUnreadCount, NOTIFY_SOUND.admin);
+  const liveUnread = useLiveShopCount(
+    unread,
+    unreadOrders,
+    getShopUnreadCounts,
+  );
 
   return (
     <nav aria-label={t("label")}>

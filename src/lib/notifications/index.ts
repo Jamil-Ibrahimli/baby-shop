@@ -68,6 +68,38 @@ export async function getAdminUnreadCount(): Promise<number> {
   });
 }
 
+/**
+ * Непрочитанные магазина с разбивкой: сколько всего и сколько из них о заказах.
+ *
+ * Нужно для ЗВУКА: о заказе владельцу сообщаем одним сигналом, обо всём
+ * остальном (отзывы) — другим, поэтому одного общего числа уже мало.
+ *
+ * groupBy, а не два count: одна поездка в базу вместо двух, а опрашивается это
+ * по таймеру.
+ */
+export type AdminUnreadCounts = {
+  /** Всего непрочитанных. */
+  total: number;
+  /** Из них о новых заказах (`type: "new_order"`). */
+  orders: number;
+};
+
+export async function getAdminUnreadCounts(): Promise<AdminUnreadCounts> {
+  const rows = await prisma.notification.groupBy({
+    by: ["type"],
+    where: { recipientRole: "admin", isRead: false },
+    _count: { _all: true },
+  });
+
+  let total = 0;
+  let orders = 0;
+  for (const row of rows) {
+    total += row._count._all;
+    if (row.type === "new_order") orders += row._count._all;
+  }
+  return { total, orders };
+}
+
 // In-app уведомление КЛИЕНТУ о смене статуса заказа. Вызывается только на ключевые
 // статусы (см. CUSTOMER_NOTIFY_STATUSES) и только если у заказа есть userId
 // (у гостя нет кабинета). Текст сохраняем снапшотом сразу на двух языках.

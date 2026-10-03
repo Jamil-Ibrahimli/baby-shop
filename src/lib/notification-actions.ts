@@ -3,6 +3,10 @@
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import {
+  getAdminUnreadCounts,
+  type AdminUnreadCounts,
+} from "@/lib/notifications";
 
 async function isAdmin(): Promise<boolean> {
   const session = await auth();
@@ -116,10 +120,13 @@ export async function getMyUnreadCount(): Promise<number> {
   });
 }
 
-/** То же для ленты магазина (сайдбар админки). Только admin. */
-export async function getShopUnreadCount(): Promise<number> {
-  if (!(await isAdmin())) return 0;
-  return prisma.notification.count({
-    where: { recipientRole: "admin", isRead: false },
-  });
+/**
+ * То же для ленты магазина (сайдбар админки). Только admin.
+ *
+ * Возвращаем не одно число, а разбивку: владельцу о заказе звучит один сигнал,
+ * об отзыве — другой, и по общему счётчику их не различить.
+ */
+export async function getShopUnreadCounts(): Promise<AdminUnreadCounts> {
+  if (!(await isAdmin())) return { total: 0, orders: 0 };
+  return getAdminUnreadCounts();
 }
