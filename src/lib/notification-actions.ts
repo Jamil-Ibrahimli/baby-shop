@@ -98,3 +98,28 @@ export async function markAllMyNotificationsRead(): Promise<void> {
   });
   revalidateNotifications();
 }
+
+/**
+ * Сколько у меня непрочитанных. Отдельный экшен ради ОПРОСА: колокольчик
+ * считается на сервере при сборке страницы, поэтому без перезагрузки цифра
+ * не менялась. Опрашивать этим, а не router.refresh(): тот пересобрал бы всю
+ * страницу со всеми её запросами, а здесь один COUNT.
+ *
+ * Ничего не ревалидируем — это чтение.
+ */
+export async function getMyUnreadCount(): Promise<number> {
+  const session = await auth();
+  const userId = session?.user?.id;
+  if (!userId) return 0;
+  return prisma.notification.count({
+    where: { recipientRole: "customer", userId, isRead: false },
+  });
+}
+
+/** То же для ленты магазина (сайдбар админки). Только admin. */
+export async function getShopUnreadCount(): Promise<number> {
+  if (!(await isAdmin())) return 0;
+  return prisma.notification.count({
+    where: { recipientRole: "admin", isRead: false },
+  });
+}

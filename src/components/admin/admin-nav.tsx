@@ -18,6 +18,8 @@ import {
 import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
+import { getShopUnreadCount } from "@/lib/notification-actions";
+import { useLiveCount } from "@/lib/use-live-count";
 
 type NavItem = {
   href: string;
@@ -82,6 +84,12 @@ export function AdminNav({
   const t = useTranslations("Admin.Nav");
   const pathname = usePathname();
 
+  // Счётчик непрочитанных подтягивается опросом: сайдбар собирается на сервере,
+  // и без этого новое уведомление появлялось только после перезагрузки.
+  // Счётчик отзывов не опрашиваем — он меняется, только когда владелец сам
+  // отвечает, то есть страница и так пересобирается.
+  const liveUnread = useLiveCount(unread, getShopUnreadCount);
+
   return (
     <nav aria-label={t("label")}>
       <ul className="flex flex-col gap-0.5">
@@ -91,7 +99,7 @@ export function AdminNav({
             item.badge === "reviews"
               ? unansweredReviews
               : item.badge === "unread"
-                ? unread
+                ? liveUnread
                 : 0;
 
           const inner = (

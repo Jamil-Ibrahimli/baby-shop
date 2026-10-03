@@ -1,5 +1,5 @@
 import { getTranslations } from "next-intl/server";
-import { Bell, ShoppingBag, LayoutGrid } from "lucide-react";
+import { ShoppingBag, LayoutGrid } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { Logo } from "@/components/brand/logo";
 import { getCartCount } from "@/lib/cart";
@@ -7,6 +7,7 @@ import { getCustomerUnreadCount } from "@/lib/notifications";
 import { auth } from "@/auth";
 import { LocaleSwitcher } from "@/components/locale-switcher";
 import { AccountMenu } from "@/components/layout/account-menu";
+import { NotificationBell } from "@/components/layout/notification-bell";
 
 // Шапка сайта: бренд, каталог, язык, аккаунт, «колокольчик» покупателя, корзина.
 export async function SiteHeader() {
@@ -46,19 +47,16 @@ export async function SiteHeader() {
 
         <div className="ml-auto flex items-center gap-2">
           <LocaleSwitcher />
+          {/* key={unread}: когда сервер пересчитал счётчик (переход по страницам,
+              revalidate после «прочитано»), компонент пересоздаётся с новым
+              начальным значением. Синхронизировать состояние через эффект
+              нельзя — правило React 19 set-state-in-effect. */}
           {session?.user && (
-            <Link
-              href="/notifications"
-              aria-label={t("notifications")}
-              className="relative inline-flex size-9 items-center justify-center rounded-full transition-colors hover:bg-muted"
-            >
-              <Bell className="size-5" aria-hidden />
-              {unread > 0 && (
-                <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-semibold text-white">
-                  {unread}
-                </span>
-              )}
-            </Link>
+            <NotificationBell
+              key={unread}
+              initialCount={unread}
+              label={t("notifications")}
+            />
           )}
           {session?.user ? (
             <AccountMenu
